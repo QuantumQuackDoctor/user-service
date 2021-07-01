@@ -1,6 +1,8 @@
+com\ss\user\api\UsersApiController.class
 com\ss\user\model\UserSettings$ThemeEnum.class
 com\ss\user\model\UserSettings.class
 com\ss\user\model\InlineObject.class
+com\ss\user\api\UserApi.class
 com\ss\user\OpenAPI2SpringBoot.class
 com\ss\user\api\RegisterApiController.class
 com\ss\user\api\RegisterApi.class
@@ -8,8 +10,10 @@ com\ss\user\model\User.class
 com\ss\user\OpenAPI2SpringBoot$ExitException.class
 com\ss\user\configuration\OpenAPIDocumentationConfig.class
 com\ss\user\model\InlineResponse409.class
+com\ss\user\api\UsersApi.class
 com\ss\user\configuration\DocsController.class
 com\ss\user\configuration\OpenAPIDocumentationConfig$BasePathAwareRelativePathProvider.class
 com\ss\user\OpenAPI2SpringBoot$1.class
+com\ss\user\api\UserApiController.class
 com\ss\user\api\ApiUtil.class
 com\ss\user\model\UserSettingsNotifications.class
