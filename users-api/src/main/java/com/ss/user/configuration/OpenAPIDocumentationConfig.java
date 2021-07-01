@@ -1,4 +1,4 @@
-package org.openapitools.configuration;
+package com.ss.user.configuration;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -24,8 +24,8 @@ public class OpenAPIDocumentationConfig {
 
     ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-            .title("Orchestrator")
-            .description("API specification for the food delivery app")
+            .title("User")
+            .description("API specification for the users microservice")
             .license("")
             .licenseUrl("http://unlicense.org")
             .termsOfServiceUrl("")

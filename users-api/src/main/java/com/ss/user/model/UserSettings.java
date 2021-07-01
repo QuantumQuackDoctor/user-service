@@ -1,142 +1,139 @@
 package com.ss.user.model;
 
-import java.util.Objects;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.ss.user.model.UserSettingsNotifications;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.openapitools.jackson.nullable.JsonNullable;
+
 import javax.validation.Valid;
-import javax.validation.constraints.*;
+import java.util.Objects;
 
 /**
  * UserSettings
  */
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2021-06-30T21:42:53.280827-06:00[America/Denver]")
-public class UserSettings   {
-  @JsonProperty("notifications")
-  private UserSettingsNotifications notifications;
+public class UserSettings {
+    @JsonProperty("notifications")
+    private UserSettingsNotifications notifications;
+    @JsonProperty("theme")
+    private ThemeEnum theme;
 
-  /**
-   * Gets or Sets theme
-   */
-  public enum ThemeEnum {
-    LIGHT("light"),
-    
-    DARK("dark");
-
-    private String value;
-
-    ThemeEnum(String value) {
-      this.value = value;
+    public UserSettings notifications(UserSettingsNotifications notifications) {
+        this.notifications = notifications;
+        return this;
     }
 
-    @JsonValue
-    public String getValue() {
-      return value;
+    /**
+     * Get notifications
+     *
+     * @return notifications
+     */
+    @ApiModelProperty(value = "")
+
+    @Valid
+
+    public UserSettingsNotifications getNotifications() {
+        return notifications;
+    }
+
+    public void setNotifications(UserSettingsNotifications notifications) {
+        this.notifications = notifications;
+    }
+
+    public UserSettings theme(ThemeEnum theme) {
+        this.theme = theme;
+        return this;
+    }
+
+    /**
+     * Get theme
+     *
+     * @return theme
+     */
+    @ApiModelProperty(value = "")
+
+
+    public ThemeEnum getTheme() {
+        return theme;
+    }
+
+    public void setTheme(ThemeEnum theme) {
+        this.theme = theme;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        UserSettings userSettings = (UserSettings) o;
+        return Objects.equals(this.notifications, userSettings.notifications) &&
+                Objects.equals(this.theme, userSettings.theme);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(notifications, theme);
     }
 
     @Override
     public String toString() {
-      return String.valueOf(value);
+        StringBuilder sb = new StringBuilder();
+        sb.append("class UserSettings {\n");
+
+        sb.append("    notifications: ").append(toIndentedString(notifications)).append("\n");
+        sb.append("    theme: ").append(toIndentedString(theme)).append("\n");
+        sb.append("}");
+        return sb.toString();
     }
 
-    @JsonCreator
-    public static ThemeEnum fromValue(String value) {
-      for (ThemeEnum b : ThemeEnum.values()) {
-        if (b.value.equals(value)) {
-          return b;
+    /**
+     * Convert the given object to string with each line indented by 4 spaces
+     * (except the first line).
+     */
+    private String toIndentedString(Object o) {
+        if (o == null) {
+            return "null";
         }
-      }
-      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+        return o.toString().replace("\n", "\n    ");
     }
-  }
 
-  @JsonProperty("theme")
-  private ThemeEnum theme;
+    /**
+     * Gets or Sets theme
+     */
+    public enum ThemeEnum {
+        LIGHT("light"),
 
-  public UserSettings notifications(UserSettingsNotifications notifications) {
-    this.notifications = notifications;
-    return this;
-  }
+        DARK("dark");
 
-  /**
-   * Get notifications
-   * @return notifications
-  */
-  @ApiModelProperty(value = "")
+        private String value;
 
-  @Valid
+        ThemeEnum(String value) {
+            this.value = value;
+        }
 
-  public UserSettingsNotifications getNotifications() {
-    return notifications;
-  }
+        @JsonCreator
+        public static ThemeEnum fromValue(String value) {
+            for (ThemeEnum b : ThemeEnum.values()) {
+                if (b.value.equals(value)) {
+                    return b;
+                }
+            }
+            throw new IllegalArgumentException("Unexpected value '" + value + "'");
+        }
 
-  public void setNotifications(UserSettingsNotifications notifications) {
-    this.notifications = notifications;
-  }
+        @JsonValue
+        public String getValue() {
+            return value;
+        }
 
-  public UserSettings theme(ThemeEnum theme) {
-    this.theme = theme;
-    return this;
-  }
-
-  /**
-   * Get theme
-   * @return theme
-  */
-  @ApiModelProperty(value = "")
-
-
-  public ThemeEnum getTheme() {
-    return theme;
-  }
-
-  public void setTheme(ThemeEnum theme) {
-    this.theme = theme;
-  }
-
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
+        @Override
+        public String toString() {
+            return String.valueOf(value);
+        }
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    UserSettings userSettings = (UserSettings) o;
-    return Objects.equals(this.notifications, userSettings.notifications) &&
-        Objects.equals(this.theme, userSettings.theme);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(notifications, theme);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class UserSettings {\n");
-    
-    sb.append("    notifications: ").append(toIndentedString(notifications)).append("\n");
-    sb.append("    theme: ").append(toIndentedString(theme)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
 }
 

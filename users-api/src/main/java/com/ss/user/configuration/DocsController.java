@@ -1,4 +1,4 @@
-package org.openapitools.configuration;
+package com.ss.user.configuration;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -8,12 +8,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * Home redirection to OpenAPI api documentation
  */
 @Controller
-public class HomeController {
+public class DocsController {
 
-    @RequestMapping("/")
+    @RequestMapping("/docs")
     public String index() {
         return "redirect:swagger-ui.html";
     }
-
 
 }
