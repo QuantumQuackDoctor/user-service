@@ -10,19 +10,17 @@ import com.ss.user.model.InlineResponse409;
 import com.ss.user.model.User;
 import io.swagger.annotations.*;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.context.request.NativeWebRequest;
-import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
-import javax.validation.constraints.*;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2021-06-30T21:42:53.280827-06:00[America/Denver]")
 @Validated
 @Api(value = "register", description = "the register API")
@@ -38,20 +36,20 @@ public interface RegisterApi {
      *
      * @param user User to register (optional)
      * @return Account Created (status code 200)
-     *         or Missing field (status code 400)
-     *         or username or email invalid (status code 409)
+     * or Missing field (status code 400)
+     * or username or email invalid (status code 409)
      */
-    @ApiOperation(value = "Register", nickname = "putRegister", notes = "TODO Register new user, email validation will be sent", tags={ "auth", })
-    @ApiResponses(value = { 
-        @ApiResponse(code = 200, message = "Account Created"),
-        @ApiResponse(code = 400, message = "Missing field"),
-        @ApiResponse(code = 409, message = "username or email invalid", response = InlineResponse409.class) })
+    @ApiOperation(value = "Register", nickname = "putRegister", notes = "TODO Register new user, email validation will be sent", tags = {"auth",})
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Account Created"),
+            @ApiResponse(code = 400, message = "Missing field"),
+            @ApiResponse(code = 409, message = "username or email invalid", response = InlineResponse409.class)})
     @PutMapping(
-        value = "/register",
-        produces = { "application/json" },
-        consumes = { "application/json", "application/xml" }
+            value = "/register",
+            produces = {"application/json"},
+            consumes = {"application/json", "application/xml"}
     )
-    default ResponseEntity<Void> putRegister(@ApiParam(value = "User to register"  )  @Valid @RequestBody(required = false) User user) {
+    default ResponseEntity<Void> putRegister(@ApiParam(value = "User to register") @Valid @RequestBody(required = false) User user) {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
 
     }
@@ -63,17 +61,17 @@ public interface RegisterApi {
      *
      * @param body Email (optional)
      * @return Email sent (status code 200)
-     *         or Not Found (status code 404)
+     * or Not Found (status code 404)
      */
-    @ApiOperation(value = "Reset password", nickname = "resetPassword", notes = "Sends email with password reset key, send patch request to same path to update password. Check users and drivers", tags={ "auth", })
-    @ApiResponses(value = { 
-        @ApiResponse(code = 200, message = "Email sent"),
-        @ApiResponse(code = 404, message = "Not Found") })
+    @ApiOperation(value = "Reset password", nickname = "resetPassword", notes = "Sends email with password reset key, send patch request to same path to update password. Check users and drivers", tags = {"auth",})
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Email sent"),
+            @ApiResponse(code = 404, message = "Not Found")})
     @PostMapping(
-        value = "/register",
-        consumes = { "application/json", "application/xml" }
+            value = "/register",
+            consumes = {"application/json", "application/xml"}
     )
-    default ResponseEntity<Void> resetPassword(@ApiParam(value = "Email"  )  @Valid @RequestBody(required = false) String body) {
+    default ResponseEntity<Void> resetPassword(@ApiParam(value = "Email") @Valid @RequestBody(required = false) String body) {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
 
     }
@@ -83,19 +81,18 @@ public interface RegisterApi {
      * PATCH /register : Update Password
      * Send new password, needs key from reset password
      *
-     * @param inlineObject  (optional)
+     * @param inlineObject (optional)
      * @return Password Reset (status code 200)
      */
-    @ApiOperation(value = "Update Password", nickname = "updatePassword", notes = "Send new password, needs key from reset password", tags={ "auth", })
-    @ApiResponses(value = { 
-        @ApiResponse(code = 200, message = "Password Reset") })
+    @ApiOperation(value = "Update Password", nickname = "updatePassword", notes = "Send new password, needs key from reset password", tags = {"auth",})
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Password Reset")})
     @PatchMapping(
-        value = "/register",
-        consumes = { "application/json" }
+            value = "/register",
+            consumes = {"application/json"}
     )
-    default ResponseEntity<Void> updatePassword(@ApiParam(value = ""  )  @Valid @RequestBody(required = false) InlineObject inlineObject) {
+    default ResponseEntity<Void> updatePassword(@ApiParam(value = "") @Valid @RequestBody(required = false) InlineObject inlineObject) {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
-
     }
 
 }

@@ -15,4 +15,9 @@ public class DocsController {
         return "redirect:swagger-ui.html";
     }
 
+    @RequestMapping("test")
+    public String test(){
+        return "test";
+    }
+
 }
