@@ -2,7 +2,7 @@ package com.ss.user.service;
 
 import com.database.ormlibrary.user.UserEntity;
 import com.database.ormlibrary.user.UserRoleEntity;
-import com.ss.user.errors.exceptions.InvalidCredentialsException;
+import com.ss.user.errors.InvalidCredentialsException;
 import com.ss.user.model.AuthRequest;
 import com.ss.user.model.AuthResponse;
 import com.ss.user.repo.UserRepo;

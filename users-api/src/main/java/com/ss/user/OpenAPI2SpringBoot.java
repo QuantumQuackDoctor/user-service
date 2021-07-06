@@ -1,6 +1,7 @@
 package com.ss.user;
 
 import com.fasterxml.jackson.databind.Module;
+import org.modelmapper.ModelMapper;
 import org.openapitools.jackson.nullable.JsonNullableModule;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.ExitCodeGenerator;
@@ -16,7 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-@SpringBootApplication(exclude = {SecurityAutoConfiguration.class})
+@SpringBootApplication
 @EntityScan("com.database.ormlibrary")
 public class OpenAPI2SpringBoot implements CommandLineRunner {
 
@@ -34,6 +35,11 @@ public class OpenAPI2SpringBoot implements CommandLineRunner {
     @Bean
     public PasswordEncoder getPasswordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public ModelMapper getModelMapper(){
+        return new ModelMapper();
     }
 
     @Bean

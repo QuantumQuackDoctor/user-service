@@ -5,7 +5,7 @@
  */
 package com.ss.user.api;
 
-import com.ss.user.errors.exceptions.InvalidCredentialsException;
+import com.ss.user.errors.InvalidCredentialsException;
 import com.ss.user.model.AuthRequest;
 import com.ss.user.model.AuthResponse;
 import io.swagger.annotations.*;
