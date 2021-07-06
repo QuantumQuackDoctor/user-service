@@ -78,7 +78,7 @@ public interface UserApi {
         value = "/user",
         produces = { "application/json", "application/xml" }
     )
-    default ResponseEntity<User> getUser() {
+    default ResponseEntity<User> getUser(@RequestHeader("id") Long id, @RequestHeader("role") String role) {
         getRequest().ifPresent(request -> {
             for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
                 if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {

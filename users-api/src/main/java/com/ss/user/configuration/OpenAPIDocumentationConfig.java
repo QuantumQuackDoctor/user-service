@@ -35,12 +35,12 @@ public class OpenAPIDocumentationConfig {
     }
 
     @Bean
-    public Docket customImplementation(ServletContext servletContext, @Value("${openapi.orchestrator.base-path:}") String basePath) {
+    public Docket customImplementation(ServletContext servletContext) {
         return new Docket(DocumentationType.SWAGGER_2)
                 .select()
                     .apis(RequestHandlerSelectors.basePackage("com.ss.user.api"))
                     .build()
-                .pathProvider(new BasePathAwareRelativePathProvider(servletContext, basePath))
+                .pathProvider(new BasePathAwareRelativePathProvider(servletContext, ""))
                 .directModelSubstitute(java.time.LocalDate.class, java.sql.Date.class)
                 .directModelSubstitute(java.time.OffsetDateTime.class, java.util.Date.class)
                 .apiInfo(apiInfo());

@@ -17,7 +17,7 @@ import javax.validation.constraints.*;
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2021-06-30T21:42:53.280827-06:00[America/Denver]")
 public class User   {
   @JsonProperty("id")
-  private String id;
+  private Long id;
 
   @JsonProperty("email")
   private String email;
@@ -43,7 +43,7 @@ public class User   {
   @JsonProperty("settings")
   private UserSettings settings;
 
-  public User id(String id) {
+  public User id(Long id) {
     this.id = id;
     return this;
   }
@@ -55,11 +55,11 @@ public class User   {
   @ApiModelProperty(value = "")
 
 
-  public String getId() {
+  public Long getId() {
     return id;
   }
 
-  public void setId(String id) {
+  public void setId(Long id) {
     this.id = id;
   }
 
