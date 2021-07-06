@@ -49,7 +49,7 @@ public interface RegisterApi {
             produces = {"application/json"},
             consumes = {"application/json", "application/xml"}
     )
-    default ResponseEntity<Void> putRegister(@ApiParam(value = "User to register") @Valid @RequestBody(required = false) User user) {
+    default ResponseEntity<?> putRegister(@ApiParam(value = "User to register") @Valid @RequestBody(required = true) User user) {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
 
     }
