@@ -28,8 +28,6 @@ public class AuthService {
         Optional<UserEntity> entity = userRepo.findByEmail(req.getEmail());
         if (entity.isPresent()) {
             UserEntity userData = entity.get();
-            System.out.println(passwordEncoder.encode(req.getPassword()));
-            System.out.println(userData.getPassword());
             if (passwordEncoder.matches(req.getPassword(), userData.getPassword())) {
                 //create jwt
                 AuthResponse response = new AuthResponse();

@@ -22,18 +22,16 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 class AuthServiceTest {
 
-    @MockBean(UserRepo.class)
+    @MockBean
     UserRepo userRepo;
-    @MockBean(PasswordEncoder.class)
+    @Autowired
     PasswordEncoder passwordEncoder;
     @Autowired
     AuthService authService;
 
     @Test
     void authenticate() throws InvalidCredentialsException {
-        when(this.passwordEncoder.encode("password")).thenReturn("password");
-        when(this.passwordEncoder.encode("badPassword")).thenReturn("badPassword");
-        UserEntity user1 = new UserEntity().setEmail("email").setPassword("password").setUserRole(new UserRoleEntity().setRole("user"));
+        UserEntity user1 = new UserEntity().setEmail("email").setPassword(passwordEncoder.encode("password")).setUserRole(new UserRoleEntity().setRole("user"));
         //return fake user
         given(userRepo.findByEmail("email")).willReturn(Optional.ofNullable(user1));
 

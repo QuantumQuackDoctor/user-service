@@ -33,10 +33,6 @@ public class UserService {
         return !userRepo.existsByEmail(email);
     }
 
-    public boolean phoneValid(String phone) {
-        return !userRepo.existsByPhone(phone);
-    }
-
     public void insertUser(User user) {
         UserEntity toInsert = convertToEntity(user);
         //set defaults

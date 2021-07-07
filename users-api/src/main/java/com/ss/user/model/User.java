@@ -52,6 +52,14 @@ public class User {
         return this;
     }
 
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
     /**
      * Get id
      *
