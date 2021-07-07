@@ -28,6 +28,7 @@ public class AuthService {
         Optional<UserEntity> entity = userRepo.findByEmail(req.getEmail());
         if (entity.isPresent()) {
             UserEntity userData = entity.get();
+            //TODO FDA-15 add account activated check
             if (passwordEncoder.matches(req.getPassword(), userData.getPassword())) {
                 //create jwt
                 AuthResponse response = new AuthResponse();
