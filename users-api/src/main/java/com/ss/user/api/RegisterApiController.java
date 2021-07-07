@@ -39,7 +39,7 @@ public class RegisterApiController implements RegisterApi {
      * or Missing field (status code 400)
      * or username or email invalid (status code 409)
      */
-    private final static String[] nullableParams = {"id", "points", "phone"};
+    private final static String[] nullableParams = {"id", "points"};
 
     @Override
     public ResponseEntity<?> putRegister(User user) {
@@ -59,7 +59,6 @@ public class RegisterApiController implements RegisterApi {
         } else {
             return new ResponseEntity<String>("Email taken", HttpStatus.CONFLICT);
         }
-
     }
 
 }

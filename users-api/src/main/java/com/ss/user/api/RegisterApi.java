@@ -51,7 +51,6 @@ public interface RegisterApi {
     )
     default ResponseEntity<?> putRegister(@ApiParam(value = "User to register") @Valid @RequestBody(required = true) User user) {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
-
     }
 
 
