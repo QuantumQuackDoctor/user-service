@@ -4,62 +4,27 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import java.util.Objects;
 
 /**
  * UserSettings
  */
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2021-06-30T21:42:53.280827-06:00[America/Denver]")
+@Getter
+@Setter
+@NoArgsConstructor
 public class UserSettings {
     @JsonProperty("notifications")
+    @NotBlank
     private UserSettingsNotifications notifications;
     @JsonProperty("theme")
+    @NotBlank
     private ThemeEnum theme;
-
-    public UserSettings notifications(UserSettingsNotifications notifications) {
-        this.notifications = notifications;
-        return this;
-    }
-
-    /**
-     * Get notifications
-     *
-     * @return notifications
-     */
-    @ApiModelProperty(value = "")
-
-    @Valid
-
-    public UserSettingsNotifications getNotifications() {
-        return notifications;
-    }
-
-    public void setNotifications(UserSettingsNotifications notifications) {
-        this.notifications = notifications;
-    }
-
-    public UserSettings theme(ThemeEnum theme) {
-        this.theme = theme;
-        return this;
-    }
-
-    /**
-     * Get theme
-     *
-     * @return theme
-     */
-    @ApiModelProperty(value = "")
-
-
-    public ThemeEnum getTheme() {
-        return theme;
-    }
-
-    public void setTheme(ThemeEnum theme) {
-        this.theme = theme;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -81,13 +46,11 @@ public class UserSettings {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("class UserSettings {\n");
 
-        sb.append("    notifications: ").append(toIndentedString(notifications)).append("\n");
-        sb.append("    theme: ").append(toIndentedString(theme)).append("\n");
-        sb.append("}");
-        return sb.toString();
+        return "class UserSettings {\n" +
+                "    notifications: " + toIndentedString(notifications) + "\n" +
+                "    theme: " + toIndentedString(theme) + "\n" +
+                "}";
     }
 
     /**

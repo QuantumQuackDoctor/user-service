@@ -29,7 +29,7 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public boolean emailValid(String email) {
+    public boolean emailAvailable(String email) {
         return !userRepo.existsByEmail(email);
     }
 

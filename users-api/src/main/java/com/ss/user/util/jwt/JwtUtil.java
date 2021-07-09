@@ -18,10 +18,11 @@ public class JwtUtil {
 
     public String createJwt(UserEntity userEntity) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("id", userEntity.getId());
+        claims.put("email", userEntity.getEmail());
         claims.put("role", userEntity.getUserRole().getRole());
 
-        return Jwts.builder().setSubject(userEntity.getEmail())
+        return Jwts.builder()
+                .setSubject(String.valueOf(userEntity.getId()))
                 .addClaims(claims)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))

@@ -30,24 +30,52 @@ class AuthServiceTest {
     AuthService authService;
 
     @Test
-    void authenticate() throws InvalidCredentialsException {
-        UserEntity user1 = new UserEntity().setEmail("email").setPassword(passwordEncoder.encode("password")).setUserRole(new UserRoleEntity().setRole("user"));
+    void Authenticate_withValidCredentials_ShouldReturnJWT() throws InvalidCredentialsException {
         //return fake user
-        given(userRepo.findByEmail("email")).willReturn(Optional.ofNullable(user1));
+        given(userRepo.findByEmail("email")).willReturn(Optional.ofNullable(createSampleUser()));
 
+        AuthRequest request = createSampleAuthRequest();
+        AuthResponse response = authService.authenticate(request);
+        assertNotNull(response.getJwt());
+    }
+
+    @Test
+    void Authenticate_withInvalidPassword_ShouldThrowInvalidCredentials(){
+        given(userRepo.findByEmail("email")).willReturn(Optional.ofNullable(createSampleUser()));
+
+        AuthRequest request = createSampleAuthRequest();
+        request.setPassword("invalid password");
+
+        try{
+            authService.authenticate(request);
+            fail();
+        }catch (InvalidCredentialsException ignored){
+            //exception thrown
+        }
+    }
+
+    @Test
+    void Authenticate_WithInvalidUser_ShouldThrowInvalidCredentials(){
+        given(userRepo.findByEmail("email")).willReturn(Optional.empty());
+
+        AuthRequest request = createSampleAuthRequest();
+
+        try{
+            authService.authenticate(request);
+            fail();
+        }catch (InvalidCredentialsException ignored){
+            //exception thrown
+        }
+    }
+
+    private UserEntity createSampleUser(){
+        return new UserEntity().setEmail("email").setPassword(passwordEncoder.encode("password")).setUserRole(new UserRoleEntity().setRole("user"));
+    }
+
+    private AuthRequest createSampleAuthRequest(){
         AuthRequest request = new AuthRequest();
         request.setEmail("email"); //matches the email specified above
         request.setPassword("password"); //also matches
-
-        AuthResponse response = authService.authenticate(request);
-        assertNotNull(response.getJwt());
-
-        try {
-            request.setEmail("email"); //matches the email specified above
-            request.setPassword("badPassword"); //doesn't match user data
-            authService.authenticate(request);
-            fail(); //should throw InvalidCredentialsException
-        } catch (InvalidCredentialsException e) {
-        }
+        return request;
     }
 }

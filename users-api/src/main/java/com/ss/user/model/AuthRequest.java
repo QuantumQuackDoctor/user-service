@@ -5,6 +5,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.openapitools.jackson.nullable.JsonNullable;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
@@ -13,81 +16,19 @@ import javax.validation.constraints.*;
  * Authentication request
  */
 @ApiModel(description = "Authentication request")
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2021-07-01T14:52:34.175022700-06:00[America/Denver]")
+@Getter @Setter @NoArgsConstructor
 public class AuthRequest   {
   @JsonProperty("email")
+  @NotBlank
   private String email;
 
   @JsonProperty("password")
+  @NotBlank
   private String password;
 
   @JsonProperty("isDriver")
+  @NotNull
   private Boolean isDriver;
-
-  public AuthRequest email(String email) {
-    this.email = email;
-    return this;
-  }
-
-  public boolean validate(){
-    return email != null && password != null && isDriver != null;
-  }
-
-  /**
-   * Get email
-   * @return email
-  */
-  @ApiModelProperty(value = "")
-
-
-  public String getEmail() {
-    return email;
-  }
-
-  public void setEmail(String email) {
-    this.email = email;
-  }
-
-  public AuthRequest password(String password) {
-    this.password = password;
-    return this;
-  }
-
-  /**
-   * Get password
-   * @return password
-  */
-  @ApiModelProperty(value = "")
-
-
-  public String getPassword() {
-    return password;
-  }
-
-  public void setPassword(String password) {
-    this.password = password;
-  }
-
-  public AuthRequest isDriver(Boolean isDriver) {
-    this.isDriver = isDriver;
-    return this;
-  }
-
-  /**
-   * Get isDriver
-   * @return isDriver
-  */
-  @ApiModelProperty(value = "")
-
-
-  public Boolean getIsDriver() {
-    return isDriver;
-  }
-
-  public void setIsDriver(Boolean isDriver) {
-    this.isDriver = isDriver;
-  }
-
 
   @Override
   public boolean equals(Object o) {
@@ -110,14 +51,12 @@ public class AuthRequest   {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class AuthRequest {\n");
-    
-    sb.append("    email: ").append(toIndentedString(email)).append("\n");
-    sb.append("    password: ").append(toIndentedString(password)).append("\n");
-    sb.append("    isDriver: ").append(toIndentedString(isDriver)).append("\n");
-    sb.append("}");
-    return sb.toString();
+
+    return "class AuthRequest {\n" +
+            "    email: " + toIndentedString(email) + "\n" +
+            "    password: " + toIndentedString(password) + "\n" +
+            "    isDriver: " + toIndentedString(isDriver) + "\n" +
+            "}";
   }
 
   /**
@@ -130,5 +69,6 @@ public class AuthRequest   {
     }
     return o.toString().replace("\n", "\n    ");
   }
+
 }
 
