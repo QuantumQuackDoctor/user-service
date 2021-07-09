@@ -31,9 +31,7 @@ public class AuthService {
             //TODO FDA-15 add account activated check
             if (passwordEncoder.matches(req.getPassword(), userData.getPassword())) {
                 //create jwt
-                AuthResponse response = new AuthResponse();
-                response.setJwt(jwtUtil.createJwt(userData));
-                return response;
+                return new AuthResponse(jwtUtil.createJwt(userData));
             }
         }
         throw new InvalidCredentialsException("Invalid Credentials");
