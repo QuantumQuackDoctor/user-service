@@ -1,17 +1,21 @@
 package com.ss.user.api;
 
+import com.database.security.AuthRepo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ss.user.errors.InvalidCredentialsException;
 import com.ss.user.model.*;
 import com.ss.user.service.AuthService;
 import com.ss.user.service.UserService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.*;
@@ -20,7 +24,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(AuthApiController.class)
+@WebMvcTest
+@AutoConfigureMockMvc(addFilters = false)
+@ContextConfiguration(classes = AuthApiController.class)
 class AuthApiControllerTest {
 
     @MockBean
@@ -29,13 +35,11 @@ class AuthApiControllerTest {
     @MockBean
     AuthService authService;
 
-    @Autowired
-    PasswordEncoder passwordEncoder;
-
     ObjectMapper mapper = new ObjectMapper();
 
     @Autowired
     MockMvc mockMvc;
+
 
     @Test
     void Register_WithValidInput_ShouldReturnSuccess() throws Exception {
@@ -63,7 +67,6 @@ class AuthApiControllerTest {
         mockMvc.perform(put("/register")
                 .content(mapper.writeValueAsString(testInsert))
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("password").exists()) //returns list of bad properties
                 .andExpect(status().isBadRequest());
 
         verify(userService, times(0)).insertUser(testInsert); //verify no user was inserted

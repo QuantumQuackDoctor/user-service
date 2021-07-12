@@ -38,7 +38,7 @@ public class UserService {
         //set defaults
         toInsert.setId(null);
         toInsert.setPoints(0);
-        toInsert.setActivated(false);
+        toInsert.setActivated(true); //TODO change to false when confirmation is added
         toInsert.setPassword(passwordEncoder.encode(user.getPassword()));
 
         //TODO move this logic to initialization
