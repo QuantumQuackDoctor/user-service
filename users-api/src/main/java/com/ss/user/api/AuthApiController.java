@@ -135,6 +135,7 @@ public class AuthApiController {
     @GetMapping(
             value = "/authenticated"
     )
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> testAuth() {
         return ResponseEntity.ok(null);
     }
