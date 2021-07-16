@@ -49,7 +49,7 @@ class AuthApiControllerTest {
         User testInsert = createSampleUser();
 
 
-        mockMvc.perform(put("/register")
+        mockMvc.perform(put("/accounts/register")
                 .content(mapper.writeValueAsString(testInsert))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -64,7 +64,7 @@ class AuthApiControllerTest {
 
         testInsert.setPassword(null); //invalidate input
 
-        mockMvc.perform(put("/register")
+        mockMvc.perform(put("/accounts/register")
                 .content(mapper.writeValueAsString(testInsert))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
@@ -79,7 +79,7 @@ class AuthApiControllerTest {
         User testInsert = createSampleUser();
 
 
-        mockMvc.perform(put("/register")
+        mockMvc.perform(put("/accounts/register")
                 .content(mapper.writeValueAsString(testInsert))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isConflict());
@@ -92,7 +92,7 @@ class AuthApiControllerTest {
         AuthRequest testRequest = createSampleAuthRequest();
         when(authService.authenticate(testRequest)).thenReturn(createSampleAuthResponse());
 
-        mockMvc.perform(post("/login")
+        mockMvc.perform(post("/accounts/login")
                 .content(mapper.writeValueAsString(testRequest))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("jwt").exists())
@@ -104,7 +104,7 @@ class AuthApiControllerTest {
         AuthRequest testRequest = createSampleAuthRequest();
         when(authService.authenticate(testRequest)).thenThrow(new InvalidCredentialsException(""));
 
-        mockMvc.perform(post("/login")
+        mockMvc.perform(post("/accounts/login")
                 .content(mapper.writeValueAsString(testRequest))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());

@@ -16,27 +16,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.NativeWebRequest;
 
 import javax.validation.Valid;
-import java.util.Optional;
 
 @Controller
+@RequestMapping(value = "/accounts")
 public class AuthApiController {
 
-    private final NativeWebRequest request;
     private final UserService userService;
     private final AuthService authService;
 
     @org.springframework.beans.factory.annotation.Autowired
-    public AuthApiController(NativeWebRequest request, UserService userService, AuthService authService) {
-        this.request = request;
+    public AuthApiController(UserService userService, AuthService authService) {
         this.userService = userService;
         this.authService = authService;
-    }
-
-    public Optional<NativeWebRequest> getRequest() {
-        return Optional.ofNullable(request);
     }
 
     /**
@@ -128,5 +121,21 @@ public class AuthApiController {
     )
     public ResponseEntity<Void> updatePassword(@ApiParam(value = "") @Valid @RequestBody(required = false) PasswordResetRequest passwordResetRequest) {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    /**
+     * Get /authenticated : test method for authentication
+     * returns 200 if authenticated 401 if not
+     */
+    @ApiOperation(value = "Test Authentication", nickname = "authTest", notes = "returns 200 if authenticated", tags = {"auth",})
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "authentication good"),
+            @ApiResponse(code = 401, message = "not authenticated")
+    })
+    @GetMapping(
+            value = "/authenticated"
+    )
+    public ResponseEntity<Void> testAuth() {
+        return ResponseEntity.ok(null);
     }
 }

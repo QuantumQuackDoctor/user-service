@@ -52,7 +52,7 @@ class AuthApiIntegrationTest {
         //create sample user to insert
         User testInsert = createSample();
 
-        mockMvc.perform(put("/register")
+        mockMvc.perform(put("/accounts/register")
                 .content(mapper.writeValueAsString(testInsert))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());

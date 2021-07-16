@@ -6,17 +6,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.NativeWebRequest;
 
 import javax.validation.Valid;
 import java.util.Optional;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2021-07-01T11:08:01.330939100-06:00[America/Denver]")
 @Controller
+@RequestMapping(value = "/accounts")
 public class UserApiController {
 
     private final NativeWebRequest request;
@@ -34,8 +31,6 @@ public class UserApiController {
      * GET /user : Get Account Details
      * Retrieves user data using JWT (id and password will be null)
      *
-     * @param id
-     * @param role
      * @return OK (status code 200)
      * or Access token is missing or invalid (status code 401)
      * or Not Found (status code 404)
