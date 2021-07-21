@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 @Controller
+@CrossOrigin(origins = "*")
 @RequestMapping(value = "/accounts")
 public class AuthApiController {
 
@@ -41,6 +42,7 @@ public class AuthApiController {
      * or Missing field (status code 400)
      * or username or email invalid (status code 409)
      */
+    @PreAuthorize("permitAll")
     @PutMapping(value = "/register", produces = {"application/json"}, consumes = {"application/json", "application/xml"})
     @ApiResponses({
             @ApiResponse(code = 200, message = "Account Created"),
