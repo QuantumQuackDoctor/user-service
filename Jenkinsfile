@@ -3,17 +3,7 @@ pipeline {
     stages {
         stage('---clean---') {
             steps {
-                sh "mvn clean install -Dspring.datasource.url=jdbc:postgresql://localhost:5432/test"
-            }
-        }
-        stage('--test--') {
-            steps {
-                sh "mvn test"
-            }
-        }
-        stage('--package--') {
-            steps {
-                sh "mvn package"
+                sh "mvn clean install -X -Dspring.datasource.url=jdbc:postgresql://localhost:5432/test"
             }
         }
     }
