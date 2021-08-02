@@ -63,6 +63,11 @@ public class UserService {
         else throw new UserNotFoundException("User not found");
     }
 
+    public void deleteUser(Long id) {
+        //TODO delete orders
+        userRepo.deleteById(id);
+    }
+
 
     private UserEntity convertToEntity(User user) {
         UserEntity entity = mapper.map(user, UserEntity.class);
