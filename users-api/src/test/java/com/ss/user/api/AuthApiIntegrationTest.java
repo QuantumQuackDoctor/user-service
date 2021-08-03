@@ -15,7 +15,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.event.annotation.BeforeTestMethod;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Month;
@@ -53,8 +52,8 @@ class AuthApiIntegrationTest {
         User testInsert = createSample();
 
         mockMvc.perform(put("/accounts/register")
-                .content(mapper.writeValueAsString(testInsert))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(mapper.writeValueAsString(testInsert))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
         verify(userRepo, times(1)).save(userCaptor.capture());

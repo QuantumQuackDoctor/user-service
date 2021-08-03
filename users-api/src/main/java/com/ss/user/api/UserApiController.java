@@ -1,30 +1,29 @@
 package com.ss.user.api;
 
+import com.database.security.AuthDetails;
+import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.User;
+import com.ss.user.service.UserService;
 import io.swagger.annotations.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.NativeWebRequest;
 
 import javax.validation.Valid;
-import java.util.Optional;
 
 @Controller
 @RequestMapping(value = "/accounts")
 public class UserApiController {
 
-    private final NativeWebRequest request;
+    private final UserService userService;
 
     @org.springframework.beans.factory.annotation.Autowired
-    public UserApiController(NativeWebRequest request) {
-        this.request = request;
-    }
-
-    public Optional<NativeWebRequest> getRequest() {
-        return Optional.ofNullable(request);
+    public UserApiController(UserService userService) {
+        this.userService = userService;
     }
 
     /**
@@ -45,14 +44,19 @@ public class UserApiController {
             @Authorization(value = "JWT")
     }, tags = {"user",})
 
-    @PreAuthorize("hasRole('user')")
-    public ResponseEntity<User> getUser() {
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    @PreAuthorize("hasAuthority('user')")
+    public ResponseEntity<User> getUser(Authentication authentication) throws UserNotFoundException {
+        UserDetails authDetails = (UserDetails) authentication.getPrincipal();
+        return ResponseEntity.ok(userService.getUser(authDetails.getUsername()));
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<String> badUser(UserNotFoundException e){
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     /**
-     * DELETE /user : Delete Account
-     * delete account (uses JWT to find account)
+     * DELETE /user : Delete Account (uses JWT to find account)
      *
      * @return Account Deleted (status code 200)
      * or Access token is missing or invalid (status code 401)
