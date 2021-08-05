@@ -1,6 +1,7 @@
 package com.ss.user.service;
 
 import com.database.ormlibrary.user.*;
+import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.User;
 import com.ss.user.model.UserSettings;
 import com.ss.user.repo.UserRepo;
@@ -54,20 +55,40 @@ public class UserService {
 
     }
 
+    public User getUser(String email) throws UserNotFoundException {
+        Optional<UserEntity> entity = userRepo.findByEmail(email);
+        if(entity.isPresent()){
+            return convertToDTO(entity.get());
+        }
+        else throw new UserNotFoundException("User not found");
+    }
+
 
     private UserEntity convertToEntity(User user) {
         UserEntity entity = mapper.map(user, UserEntity.class);
 
         //populate settings, modelMapper cannot get these
-        UserSettings us = user.getSettings();
+        UserSettings userSettings = user.getSettings();
         SettingsEntity settings = new SettingsEntity();
         settings.setNotifications(new NotificationsEntity()
-                .setEmail(us.getNotifications().getEmail())
-                .setPhoneOption(us.getNotifications().getText()));
-        settings.setThemes(new ThemesEntity().setDark(us.getTheme().equals(UserSettings.ThemeEnum.DARK)));
+                .setEmail(userSettings.getNotifications().getEmail())
+                .setPhoneOption(userSettings.getNotifications().getText()));
+        settings.setThemes(new ThemesEntity().setDark(userSettings.getTheme().equals(UserSettings.ThemeEnum.DARK)));
 
         entity.setBirthDate(LocalDate.from(formatter.parse(user.getDOB())));
         entity.setSettings(settings);
         return entity;
+    }
+
+    private User convertToDTO(UserEntity entity){
+        User user = mapper.map(entity, User.class);
+        user.setDOB(entity.getBirthDate().format((formatter)));
+        user.getSettings().getNotifications().setEmail(entity.getSettings().getNotifications().getEmail());
+        user.getSettings().getNotifications().setText(entity.getSettings().getNotifications().getPhoneOption());
+        user.getSettings().setTheme(entity.getSettings().getThemes().getDark() ? UserSettings.ThemeEnum.DARK : UserSettings.ThemeEnum.LIGHT);
+
+        //delete password
+        user.setPassword(null);
+        return user;
     }
 }
