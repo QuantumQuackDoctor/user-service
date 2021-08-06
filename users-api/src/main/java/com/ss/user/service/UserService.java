@@ -89,8 +89,10 @@ public class UserService {
             UserEntity userToActivate = userEntityOptional.get();
             if (Instant.now().isBefore(userToActivate.getActivationTokenExpiration())) {
                 userToActivate.setActivated(true);
+                userToActivate.setActivationToken(null);
+                userToActivate.setActivationTokenExpiration(null);
                 userRepo.save(userToActivate);
-            } else { //send another email
+            } else {
                 userToActivate.setActivated(false);
                 userToActivate.setActivationToken(UUID.randomUUID());
                 userToActivate.setActivationTokenExpiration(Instant.now().plusMillis(7200000));
