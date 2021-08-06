@@ -48,6 +48,7 @@ public class UserService {
     }
 
     public void insertUser(User user) throws MessagingException {
+        if (!emailAvailable(user.getEmail())) return;
         UserEntity toInsert = convertToEntity(user);
         //set defaults
         toInsert.setId(null);
@@ -73,11 +74,13 @@ public class UserService {
     private void sendActivationEmail(String recipient, UUID uuid) throws MessagingException {
         MimeMessage confirmationEmail = javaMailSender.createMimeMessage();
 
+        String activationLink = userPortalURL + "/activate/" + uuid.toString();
+
         confirmationEmail.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
         confirmationEmail.setFrom("ezra.john.mitchell@gmail.com");
-        confirmationEmail.setContent("<h3 style=\"background-color: black\">Activate your account</h3>" +
-                "Follow this link to activate your account " +
-                String.format("<a href=\"%s\">Activate</a>", userPortalURL + "/activate/" + uuid.toString()), "text/html");
+        confirmationEmail.setContent(
+                String.format("<a href=\"%s\"><h1 style=\"background-color: #2aa4d2; color: #f79e0; padding: 1em; text-decoration: none;\">Activate your account</h1></a>", activationLink) +
+                "\nFollow this link to activate your account ", "text/html");
         confirmationEmail.setSubject("Scrumptious account activation");
 
         javaMailSender.send(confirmationEmail);
