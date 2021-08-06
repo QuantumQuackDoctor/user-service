@@ -6,7 +6,6 @@ import com.database.security.AuthRepo;
 import com.ss.user.errors.InvalidCredentialsException;
 import com.ss.user.model.AuthRequest;
 import com.ss.user.model.AuthResponse;
-import com.ss.user.repo.UserRepo;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
