@@ -3,7 +3,6 @@ package com.ss.user.service;
 import com.database.ormlibrary.user.*;
 import com.ss.user.errors.ConfirmationTokenExpiredException;
 import com.ss.user.errors.InvalidAdminEmailException;
-import com.ss.user.errors.InvalidCredentialsException;
 import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.User;
 import com.ss.user.model.UserSettings;
@@ -36,6 +35,8 @@ public class UserService {
     private final JavaMailSender javaMailSender;
     @Value("${user-portal-url}")
     private String userPortalURL;
+    @Value("${admin-portal-url}")
+    private String adminPortalURL;
 
     public UserService(UserRepo userRepo, UserRoleRepo userRoleRepo, ModelMapper mapper, PasswordEncoder passwordEncoder, JavaMailSender javaMailSender) {
         this.userRepo = userRepo;
@@ -58,20 +59,20 @@ public class UserService {
         toInsert.setActivated(false);
         toInsert.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        if(!isAdmin) {
+        if (!isAdmin) {
             Optional<UserRoleEntity> role;
             if (!(role = userRoleRepo.findByRole("user")).isPresent()) {
                 role = Optional.of(userRoleRepo.save(new UserRoleEntity().setRole("user")));
             }
             toInsert.setUserRole(role.get());
-        } else{
-            if(user.getEmail().endsWith("@smoothstack.com")){
+        } else {
+            if (user.getEmail().endsWith("@smoothstack.com")) {
                 Optional<UserRoleEntity> role;
                 if (!(role = userRoleRepo.findByRole("admin")).isPresent()) {
                     role = Optional.of(userRoleRepo.save(new UserRoleEntity().setRole("admin")));
                 }
                 toInsert.setUserRole(role.get());
-            }else{
+            } else {
                 throw new InvalidAdminEmailException("invalid emawil for admin account");
             }
         }
@@ -80,21 +81,21 @@ public class UserService {
         toInsert.setActivationToken(UUID.randomUUID());
         toInsert.setActivationTokenExpiration(Instant.now().plusMillis(7200000));
 
-        sendActivationEmail(toInsert.getEmail(), toInsert.getActivationToken());
+        sendActivationEmail(toInsert.getEmail(), toInsert.getActivationToken(), isAdmin ? adminPortalURL : userPortalURL);
 
         userRepo.save(toInsert);
     }
 
-    private void sendActivationEmail(String recipient, UUID uuid) throws MessagingException {
+    private void sendActivationEmail(String recipient, UUID uuid, String portalUrl) throws MessagingException {
         MimeMessage confirmationEmail = javaMailSender.createMimeMessage();
 
-        String activationLink = userPortalURL + "/activate/" + uuid.toString();
+        String activationLink = portalUrl + "/activate/" + uuid.toString();
 
         confirmationEmail.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
         confirmationEmail.setFrom("ezra.john.mitchell@gmail.com");
         confirmationEmail.setContent(
                 String.format("<a href=\"%s\"><h1 style=\"background-color: #2aa4d2; color: #f79e0; padding: 1em; text-decoration: none;\">Activate your account</h1></a>", activationLink) +
-                "\nFollow this link to activate your account ", "text/html");
+                        "\nFollow this link to activate your account ", "text/html");
         confirmationEmail.setSubject("Scrumptious account activation");
 
         javaMailSender.send(confirmationEmail);
@@ -114,7 +115,7 @@ public class UserService {
                 userToActivate.setActivationToken(UUID.randomUUID());
                 userToActivate.setActivationTokenExpiration(Instant.now().plusMillis(7200000));
 
-                sendActivationEmail(userToActivate.getEmail(), userToActivate.getActivationToken());
+                sendActivationEmail(userToActivate.getEmail(), userToActivate.getActivationToken(), userToActivate.getUserRole().getRole().equals("admin") ? adminPortalURL : userPortalURL);
                 userRepo.save(userToActivate);
                 throw new ConfirmationTokenExpiredException("Confirmation token expired");
             }
