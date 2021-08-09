@@ -1,6 +1,7 @@
 package com.ss.user.api;
 
 import com.ss.user.errors.ConfirmationTokenExpiredException;
+import com.ss.user.errors.InvalidAdminEmailException;
 import com.ss.user.errors.InvalidCredentialsException;
 import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.AuthRequest;
@@ -13,6 +14,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.models.auth.In;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -54,15 +56,20 @@ public class AuthApiController {
             @ApiResponse(code = 400, message = "Missing field"),
             @ApiResponse(code = 409, message = "username or email invalid")})
     @ApiOperation(value = "Register", nickname = "putRegister", notes = "TODO Register new user, email validation will be sent", tags = {"auth",})
-    public ResponseEntity<String> putRegister(@RequestBody(required = true) @Valid @ApiParam("User to register") User user) throws MessagingException {
+    public ResponseEntity<String> putRegister(@RequestParam(defaultValue = "false") boolean admin, @RequestBody(required = true) @Valid @ApiParam("User to register") User user) throws MessagingException, InvalidCredentialsException, InvalidAdminEmailException {
         //check if phone or email exist
         if (userService.emailAvailable(user.getEmail())) {
             //insert user
-            userService.insertUser(user);
+            userService.insertUser(user, admin);
             return ResponseEntity.ok("Account created");
         } else {
             return new ResponseEntity<String>("Email taken", HttpStatus.CONFLICT);
         }
+    }
+
+    @ExceptionHandler(InvalidAdminEmailException.class)
+    public ResponseEntity<String> invalidEmailForAdmin(InvalidAdminEmailException exception){
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(exception.getMessage());
     }
 
     /**

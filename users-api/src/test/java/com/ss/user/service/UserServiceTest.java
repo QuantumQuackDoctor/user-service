@@ -5,6 +5,8 @@ import com.database.ormlibrary.user.SettingsEntity;
 import com.database.ormlibrary.user.ThemesEntity;
 import com.database.ormlibrary.user.UserEntity;
 import com.ss.user.errors.ConfirmationTokenExpiredException;
+import com.ss.user.errors.InvalidAdminEmailException;
+import com.ss.user.errors.InvalidCredentialsException;
 import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.User;
 import com.ss.user.model.UserSettings;
@@ -30,7 +32,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class UserServiceTest {
@@ -49,19 +52,19 @@ class UserServiceTest {
     PasswordEncoder passwordEncoder;
 
     @BeforeEach
-    void setup(){
+    void setup() {
         when(javaMailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
     }
 
     @Test
-    void insertUser() throws MessagingException {
+    void insertUser() throws MessagingException, InvalidAdminEmailException {
         when(userRepo.save(userCaptor.capture())).thenReturn(null);
 
         //create sample user to insert
         User testInsert = createSampleUser();
 
         //insert sample
-        userService.insertUser(testInsert);
+        userService.insertUser(testInsert, false);
 
         //capture insertion from userRepo
         UserEntity insertedUser = userCaptor.getValue();
@@ -86,7 +89,57 @@ class UserServiceTest {
         assertEquals("ezra.john.mitchell@gmail.com", emailCaptor.getValue().getFrom()[0].toString());
     }
 
-    User createSampleUser(){
+    @Test
+    void insertAdmin() throws MessagingException, InvalidAdminEmailException {
+        when(userRepo.save(userCaptor.capture())).thenReturn(null);
+
+        //create sample user to insert
+        User testInsert = createSampleUser();
+
+        testInsert.setEmail("email@smoothstack.com");
+        //insert sample
+        userService.insertUser(testInsert, true);
+
+        //capture insertion from userRepo
+        UserEntity insertedUser = userCaptor.getValue();
+
+
+        assertNull(insertedUser.getId()); //id should be null upon insertion
+        assertEquals(0, insertedUser.getPoints());
+        assertEquals("email@smoothstack.com", insertedUser.getEmail());
+        assertEquals("firstName", insertedUser.getFirstName());
+        assertEquals("lastName", insertedUser.getLastName());
+        assertTrue(passwordEncoder.matches("password", insertedUser.getPassword())); //test hashing
+        assertEquals(2002, insertedUser.getBirthDate().getYear());
+        assertEquals(Month.JULY, insertedUser.getBirthDate().getMonth());
+        assertEquals(20, insertedUser.getBirthDate().getDayOfMonth());
+        assertFalse(insertedUser.getVeteran());
+        assertFalse(insertedUser.getSettings().getNotifications().getEmail());
+        assertFalse(insertedUser.getSettings().getNotifications().getPhoneOption());
+        assertTrue(insertedUser.getSettings().getThemes().getDark());
+
+        verify(javaMailSender).send(emailCaptor.capture());
+
+        assertEquals("ezra.john.mitchell@gmail.com", emailCaptor.getValue().getFrom()[0].toString());
+    }
+
+    @Test
+    void insertInvalidAdmin() throws MessagingException, InvalidCredentialsException {
+        when(userRepo.save(userCaptor.capture())).thenReturn(null);
+
+        //create sample user to insert
+        User testInsert = createSampleUser();
+
+        testInsert.setEmail("email@notsmoothstack.com");
+        try {
+            //insert sample
+            userService.insertUser(testInsert, true);
+            fail();
+        } catch (InvalidAdminEmailException ignored) {
+        }
+    }
+
+    User createSampleUser() {
         User user = new User();
         user.setId((long) 234453); //should be overwritten
         user.setEmail("4443324@invalid.com");
@@ -106,7 +159,7 @@ class UserServiceTest {
         return user;
     }
 
-    UserEntity createSampleUserEntity(){
+    UserEntity createSampleUserEntity() {
         UserEntity user = new UserEntity();
         user.setId((long) 234453); //should be overwritten
         user.setEmail("4443324@invalid.com");
@@ -163,10 +216,10 @@ class UserServiceTest {
         UUID token = UUID.randomUUID();
         when(userRepo.findByActivationToken(token)).thenReturn(Optional.empty());
 
-        try{
+        try {
             userService.activateAccount(token);
             fail();
-        }catch (UserNotFoundException ignored){
+        } catch (UserNotFoundException ignored) {
         }
     }
 }

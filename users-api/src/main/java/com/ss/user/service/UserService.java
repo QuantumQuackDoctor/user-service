@@ -2,6 +2,8 @@ package com.ss.user.service;
 
 import com.database.ormlibrary.user.*;
 import com.ss.user.errors.ConfirmationTokenExpiredException;
+import com.ss.user.errors.InvalidAdminEmailException;
+import com.ss.user.errors.InvalidCredentialsException;
 import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.User;
 import com.ss.user.model.UserSettings;
@@ -47,7 +49,7 @@ public class UserService {
         return !userRepo.existsByEmail(email);
     }
 
-    public void insertUser(User user) throws MessagingException {
+    public void insertUser(User user, boolean isAdmin) throws MessagingException, InvalidAdminEmailException {
         if (!emailAvailable(user.getEmail())) return;
         UserEntity toInsert = convertToEntity(user);
         //set defaults
@@ -56,11 +58,23 @@ public class UserService {
         toInsert.setActivated(false);
         toInsert.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        Optional<UserRoleEntity> role;
-        if (!(role = userRoleRepo.findByRole("user")).isPresent()) {
-            role = Optional.of(userRoleRepo.save(new UserRoleEntity().setRole("user")));
+        if(!isAdmin) {
+            Optional<UserRoleEntity> role;
+            if (!(role = userRoleRepo.findByRole("user")).isPresent()) {
+                role = Optional.of(userRoleRepo.save(new UserRoleEntity().setRole("user")));
+            }
+            toInsert.setUserRole(role.get());
+        } else{
+            if(user.getEmail().endsWith("@smoothstack.com")){
+                Optional<UserRoleEntity> role;
+                if (!(role = userRoleRepo.findByRole("admin")).isPresent()) {
+                    role = Optional.of(userRoleRepo.save(new UserRoleEntity().setRole("admin")));
+                }
+                toInsert.setUserRole(role.get());
+            }else{
+                throw new InvalidAdminEmailException("invalid emawil for admin account");
+            }
         }
-        toInsert.setUserRole(role.get());
 
         //create activation token
         toInsert.setActivationToken(UUID.randomUUID());

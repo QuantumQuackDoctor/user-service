@@ -4,6 +4,7 @@ import com.database.ormlibrary.user.NotificationsEntity;
 import com.database.ormlibrary.user.SettingsEntity;
 import com.database.ormlibrary.user.ThemesEntity;
 import com.database.ormlibrary.user.UserEntity;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ss.user.model.User;
 import com.ss.user.model.UserSettings;
@@ -94,6 +95,19 @@ class AuthApiIntegrationTest {
     }
 
     @Test
+    void adminRegister_WithInvalidEmail() throws Exception {
+
+        User testInsert = createSample();
+        testInsert.setEmail("email@notsmoothstack.com");
+
+        mockMvc.perform(put("/accounts/register?admin=true")
+                        .content(mapper.writeValueAsString(testInsert))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+
+    }
+
+    @Test
     void activateIntegration_withValidToken() throws Exception {
         UUID token = UUID.randomUUID();
         UserEntity sampleUser = createSampleUserEntity();
@@ -134,7 +148,7 @@ class AuthApiIntegrationTest {
         verify(userRepo, times(0)).save(userCaptor.capture());
     }
 
-    UserEntity createSampleUserEntity(){
+    UserEntity createSampleUserEntity() {
         UserEntity user = new UserEntity();
         user.setId((long) 234453); //should be overwritten
         user.setEmail("4443324@invalid.com");

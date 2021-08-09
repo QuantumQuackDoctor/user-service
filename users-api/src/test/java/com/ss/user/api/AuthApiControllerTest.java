@@ -1,6 +1,7 @@
 package com.ss.user.api;
 
 import com.database.security.AuthRepo;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ss.user.errors.InvalidCredentialsException;
 import com.ss.user.model.*;
@@ -54,7 +55,7 @@ class AuthApiControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        verify(userService, times(1)).insertUser(testInsert);
+        verify(userService, times(1)).insertUser(testInsert, false);
     }
 
     @Test
@@ -69,7 +70,7 @@ class AuthApiControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
 
-        verify(userService, times(0)).insertUser(testInsert); //verify no user was inserted
+        verify(userService, times(0)).insertUser(testInsert, false); //verify no user was inserted
     }
 
     @Test
@@ -84,7 +85,22 @@ class AuthApiControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isConflict());
 
-        verify(userService, times(0)).insertUser(testInsert); //verify no user was inserted
+        verify(userService, times(0)).insertUser(testInsert, false); //verify no user was inserted
+    }
+
+    @Test
+    void Register_AsAdminWithCorrectEmail_ShouldReturnOK() throws Exception {
+        when(userService.emailAvailable("email@smoothstack.com")).thenReturn(true);
+        //create sample user to insert
+        User testInsert = createSampleUser();
+        testInsert.setEmail("email@smoothstack.com");
+
+        mockMvc.perform(put("/accounts/register?admin=true")
+                        .content(mapper.writeValueAsString(testInsert))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        verify(userService, times(1)).insertUser(testInsert, true); //verify no user was inserted
     }
 
     @Test
