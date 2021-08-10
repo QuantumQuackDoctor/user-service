@@ -74,7 +74,7 @@ public class UserApiController {
             @Authorization(value = "JWT")
     }, tags = {"user",})
 
-    @PreAuthorize("hasAuthority('user')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteUser(Authentication authentication)  {
         AuthDetails authDetails = (AuthDetails) authentication.getPrincipal();
         userService.deleteUser(authDetails.getId());
