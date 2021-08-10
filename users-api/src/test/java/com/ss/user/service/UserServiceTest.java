@@ -1,9 +1,6 @@
 package com.ss.user.service;
 
-import com.database.ormlibrary.user.NotificationsEntity;
-import com.database.ormlibrary.user.SettingsEntity;
-import com.database.ormlibrary.user.ThemesEntity;
-import com.database.ormlibrary.user.UserEntity;
+import com.database.ormlibrary.user.*;
 import com.ss.user.errors.ConfirmationTokenExpiredException;
 import com.ss.user.errors.InvalidAdminEmailException;
 import com.ss.user.errors.InvalidCredentialsException;
@@ -169,6 +166,7 @@ class UserServiceTest {
         user.setBirthDate(LocalDate.now()); //test local date parsing
         user.setPoints(233434); //should be overwritten
         user.setVeteran(false);
+        user.setUserRole(new UserRoleEntity().setRole("user"));
         SettingsEntity settings = new SettingsEntity();
         settings.setThemes(new ThemesEntity().setDark(true));
         NotificationsEntity notificationsEntity = new NotificationsEntity();

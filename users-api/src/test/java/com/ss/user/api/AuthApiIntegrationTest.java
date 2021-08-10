@@ -1,9 +1,6 @@
 package com.ss.user.api;
 
-import com.database.ormlibrary.user.NotificationsEntity;
-import com.database.ormlibrary.user.SettingsEntity;
-import com.database.ormlibrary.user.ThemesEntity;
-import com.database.ormlibrary.user.UserEntity;
+import com.database.ormlibrary.user.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ss.user.model.User;
@@ -158,6 +155,7 @@ class AuthApiIntegrationTest {
         user.setBirthDate(LocalDate.now()); //test local date parsing
         user.setPoints(233434); //should be overwritten
         user.setVeteran(false);
+        user.setUserRole(new UserRoleEntity().setRole("user"));
         SettingsEntity settings = new SettingsEntity();
         settings.setThemes(new ThemesEntity().setDark(true));
         NotificationsEntity notificationsEntity = new NotificationsEntity();

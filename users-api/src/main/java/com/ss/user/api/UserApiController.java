@@ -44,7 +44,7 @@ public class UserApiController {
             @Authorization(value = "JWT")
     }, tags = {"user",})
 
-    @PreAuthorize("hasAuthority('user')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<User> getUser(Authentication authentication) throws UserNotFoundException {
         UserDetails authDetails = (UserDetails) authentication.getPrincipal();
         return ResponseEntity.ok(userService.getUser(authDetails.getUsername()));
