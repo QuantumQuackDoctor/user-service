@@ -13,6 +13,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
@@ -35,6 +36,9 @@ class UserApiControllerTest {
     @MockBean
     UserRepo userRepo;
 
+    @MockBean
+    JavaMailSender javaMailSender;
+
     @Autowired
     MockMvc mockMvc;
 
@@ -42,7 +46,6 @@ class UserApiControllerTest {
     void setup() {
         when(userRepo.findByEmail("email")).thenReturn(Optional.of(createSample()));
     }
-
 
     @Test
     @WithMockUser(username = "email", authorities = "user")

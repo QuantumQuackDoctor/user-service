@@ -3,6 +3,8 @@ package com.ss.user.service;
 import com.database.ormlibrary.user.UserEntity;
 import com.database.ormlibrary.user.UserRoleEntity;
 import com.database.security.AuthRepo;
+import com.database.security.CustomUserDetails;
+import com.database.security.SecurityConfig;
 import com.ss.user.errors.InvalidCredentialsException;
 import com.ss.user.model.AuthRequest;
 import com.ss.user.model.AuthResponse;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Optional;
 
@@ -18,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.BDDMockito.given;
 
-@SpringBootTest
+@SpringBootTest(classes = {AuthService.class, SecurityConfig.class, AuthRepo.class, CustomUserDetails.class})
 class AuthServiceTest {
 
     @MockBean
