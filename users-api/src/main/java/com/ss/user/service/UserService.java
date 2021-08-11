@@ -1,9 +1,11 @@
 package com.ss.user.service;
 
+import com.database.ormlibrary.order.OrderEntity;
 import com.database.ormlibrary.user.*;
 import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.User;
 import com.ss.user.model.UserSettings;
+import com.ss.user.repo.OrderRepo;
 import com.ss.user.repo.UserRepo;
 import com.ss.user.repo.UserRoleRepo;
 import org.modelmapper.ModelMapper;
@@ -12,6 +14,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -19,13 +24,15 @@ public class UserService {
 
     private final UserRepo userRepo;
     private final UserRoleRepo userRoleRepo;
+    private final OrderRepo orderRepo;
     private final ModelMapper mapper;
     private final PasswordEncoder passwordEncoder;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    public UserService(UserRepo userRepo, UserRoleRepo userRoleRepo, ModelMapper mapper, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepo userRepo, UserRoleRepo userRoleRepo, OrderRepo orderRepo, ModelMapper mapper, PasswordEncoder passwordEncoder) {
         this.userRepo = userRepo;
         this.userRoleRepo = userRoleRepo;
+        this.orderRepo = orderRepo;
         this.mapper = mapper;
         this.passwordEncoder = passwordEncoder;
     }
@@ -68,10 +75,16 @@ public class UserService {
         userRepo.deleteById(id);
     }
 
+/*    public void updateOrders (User user){
+
+    }*/
 
     private UserEntity convertToEntity(User user) {
         UserEntity entity = mapper.map(user, UserEntity.class);
 
+        List<OrderEntity> orderEntities = new ArrayList<>();
+        orderRepo.findAllById(user.getOrders()).forEach(orderEntities :: add);
+        entity.setOrders(orderEntities);
         //populate settings, modelMapper cannot get these
         UserSettings userSettings = user.getSettings();
         SettingsEntity settings = new SettingsEntity();
@@ -91,6 +104,10 @@ public class UserService {
         user.getSettings().getNotifications().setEmail(entity.getSettings().getNotifications().getEmail());
         user.getSettings().getNotifications().setText(entity.getSettings().getNotifications().getPhoneOption());
         user.getSettings().setTheme(entity.getSettings().getThemes().getDark() ? UserSettings.ThemeEnum.DARK : UserSettings.ThemeEnum.LIGHT);
+
+        List<Long> orderIDs = new ArrayList<>();
+        entity.getOrders().forEach(orderEntity -> orderIDs.add(orderEntity.getId()));
+        user.setOrders(orderIDs);
 
         //delete password
         user.setPassword(null);

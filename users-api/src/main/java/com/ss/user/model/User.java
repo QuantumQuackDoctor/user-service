@@ -11,6 +11,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -60,6 +61,8 @@ public class User {
 
     private UserSettings settings;
 
+    @JsonProperty ("orders")
+    private List<Long> orders;
 
     @Override
     public boolean equals(Object o) {
