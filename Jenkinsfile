@@ -3,7 +3,6 @@ pipeline {
     stages {
         stage('git') {
             steps {
-                git branch: 'master', url: 'https://github.com/QuantumQuackDoctor/ORM-Library.git'
                 git branch: 'dev', url: 'https://github.com/QuantumQuackDoctor/user-service.git'
             }
         }
@@ -17,12 +16,19 @@ pipeline {
                 sh "mvn clean test"
             }
         }
-        stage('sonarqube') {
+        stage('SonarQube analysis') {
             steps {
-                echo "sonarqube"
-                //sh "mvn clean test"
-            }
+                withSonarQubeEnv('SonarQube') {
+                    sh "mvn sonar:sonar"    
+                }    
+            }    
         }
+        stage('Quality Gate') {
+            steps {
+                waitForQualityGate abortPipeline= true
+            }   
+        }
+        
         stage('package') {
             steps {
                 echo "package"
