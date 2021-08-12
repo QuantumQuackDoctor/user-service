@@ -1,7 +1,9 @@
 package com.ss.user;
 
+import com.database.ormlibrary.user.UserRoleEntity;
 import com.database.security.SecurityConfig;
 import com.fasterxml.jackson.databind.Module;
+import com.ss.user.repo.UserRoleRepo;
 import org.modelmapper.ModelMapper;
 import org.openapitools.jackson.nullable.JsonNullableModule;
 import org.springframework.boot.CommandLineRunner;
@@ -46,6 +48,15 @@ public class SpringBootRunner implements CommandLineRunner {
                         .allowedMethods("*")
                         .allowedHeaders("Content-Type");
             }*/
+        };
+    }
+
+    @Bean
+    public CommandLineRunner initialization(UserRoleRepo userRoleRepo) {
+        return (val) -> {
+            if (!userRoleRepo.findByRole("user").isPresent()) {
+                userRoleRepo.save(new UserRoleEntity().setRole("user"));
+            }
         };
     }
 

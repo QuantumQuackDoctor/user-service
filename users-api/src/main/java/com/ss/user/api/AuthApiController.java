@@ -1,6 +1,9 @@
 package com.ss.user.api;
 
+import com.ss.user.errors.ConfirmationTokenExpiredException;
+import com.ss.user.errors.InvalidAdminEmailException;
 import com.ss.user.errors.InvalidCredentialsException;
+import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.AuthRequest;
 import com.ss.user.model.AuthResponse;
 import com.ss.user.model.PasswordResetRequest;
@@ -11,13 +14,17 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.models.auth.In;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.mail.MessagingException;
 import javax.validation.Valid;
+import javax.websocket.server.PathParam;
+import java.util.UUID;
 
 @Controller
 @CrossOrigin(origins = "*")
@@ -49,15 +56,20 @@ public class AuthApiController {
             @ApiResponse(code = 400, message = "Missing field"),
             @ApiResponse(code = 409, message = "username or email invalid")})
     @ApiOperation(value = "Register", nickname = "putRegister", notes = "TODO Register new user, email validation will be sent", tags = {"auth",})
-    public ResponseEntity<String> putRegister(@RequestBody(required = true) @Valid @ApiParam("User to register") User user) {
+    public ResponseEntity<String> putRegister(@RequestParam(defaultValue = "false") boolean admin, @RequestBody(required = true) @Valid @ApiParam("User to register") User user) throws MessagingException, InvalidCredentialsException, InvalidAdminEmailException {
         //check if phone or email exist
         if (userService.emailAvailable(user.getEmail())) {
             //insert user
-            userService.insertUser(user);
+            userService.insertUser(user, admin);
             return ResponseEntity.ok("Account created");
         } else {
             return new ResponseEntity<String>("Email taken", HttpStatus.CONFLICT);
         }
+    }
+
+    @ExceptionHandler(InvalidAdminEmailException.class)
+    public ResponseEntity<String> invalidEmailForAdmin(InvalidAdminEmailException exception){
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(exception.getMessage());
     }
 
     /**
@@ -80,6 +92,32 @@ public class AuthApiController {
         return ResponseEntity.ok(authService.authenticate(authRequest));
     }
 
+    @PreAuthorize("permitAll")
+    @PostMapping(value = "/activate/{token}")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Account activated"),
+            @ApiResponse(code = 410, message = "Activation expired")
+    })
+    @ApiOperation(value = "activate", nickname = "Activate account", response = String.class)
+    public ResponseEntity<Void> postActivate(@PathVariable UUID token) throws MessagingException, ConfirmationTokenExpiredException, UserNotFoundException {
+        userService.activateAccount(token);
+        return ResponseEntity.ok(null);
+    }
+
+    @ExceptionHandler(ConfirmationTokenExpiredException.class)
+    public ResponseEntity<String> tokenExpired(ConfirmationTokenExpiredException e){
+        return new ResponseEntity<>("", HttpStatus.GONE);
+    }
+
+    @ExceptionHandler(MessagingException.class)
+    public ResponseEntity<String> emailFailedToSend(MessagingException e){
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<String> userNotFound(UserNotFoundException e){
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+    }
 
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<String> badCredentials(InvalidCredentialsException e) {
