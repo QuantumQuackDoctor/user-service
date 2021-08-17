@@ -47,9 +47,9 @@ pipeline {
                 script {
                     sh 'cp -r /var/lib/jenkins/workspace/user-service-job/users-api/target .'
                     sh 'docker build . -t quangmtran36/qqd-user-service:$Docker_tag'
-                    withCredentials([usernameColonPassword(credentialsId: '46721695-0273-43dc-a462-33947e9bb8b4', variable: 'docker_credentials')]) {
-                        sh 'docker login -u quangmtran36 -p $docker_credentials'
-				        sh 'docker push quangmtran36/qqd-user-service:$Docker_tag'
+                    withCredentials([string(credentialsId: '6b6d3ec6-97dc-4c1c-bf02-67afd00371dc', variable: 'dockerHubPwd')]) {
+                        sh 'docker login -u quangmtran36 -p ${dockerHubPwd}'
+                        sh 'docker push quangmtran36/qqd-user-service:$Docker_tag'                 
                     }
                 }
             }
