@@ -4,4 +4,8 @@ ARG JAR_FILE=/target/*.jar
 
 COPY ${JAR_FILE} app.jar
 
+CMD ls
+
+CMD pwd
+
 ENTRYPOINT ["java", "-jar", "/app.jar"]
