@@ -46,7 +46,7 @@ pipeline {
         stage('docker') {
             steps{
                 script {
-		            sh 'cp -r ../devops-training@2/target .'
+		            sh 'cp -r ../users-api/target .'
                     sh 'docker build . -t quangmtran36/qqd-user-service:$Docker_tag'
                     withCredentials([usernameColonPassword(credentialsId: '46721695-0273-43dc-a462-33947e9bb8b4', variable: 'docker_credentials')]) {
                         sh 'docker login -u quangmtran36 -p $docker_credentials'
