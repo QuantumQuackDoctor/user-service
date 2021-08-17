@@ -44,12 +44,6 @@ pipeline {
             }
         }
         stage('docker') {
-            steps {
-                echo "docker"
-                //sh "mvn clean test"
-            }
-        }
-        stage('docker') {
             steps{
                 script {
 		            sh 'cp -r ../devops-training@2/target .'
