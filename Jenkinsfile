@@ -39,8 +39,7 @@ pipeline {
 
         stage('package') {
             steps {
-                echo "package"
-                //sh "mvn clean test"
+                sh "mvn clean package"
             }
         }
         stage('docker') {
