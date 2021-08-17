@@ -4,6 +4,7 @@ WORKDIR /var/lib/jenkins/workspace/user-service-job
 ARG JAR_FILE=/target/*.jar
 
 RUN echo $(ls)
+RUN echo $(pwd)
 
 COPY ${JAR_FILE} app.jar
 
