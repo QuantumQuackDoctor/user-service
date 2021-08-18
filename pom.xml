@@ -9,19 +9,32 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <profiles>
-    <profile>
-        <id>sonar</id>
-        <activation>
-            <activeByDefault>true</activeByDefault>
-        </activation>
-        <properties>
-          <sonar.host.url>https://sonarcloud.io/</sonar.host.url>
-          <sonar.organization>qqd</sonar.organization>
-          <sonar.login>8179de284b930721807fce40ac4631f5da6ab6dd</sonar.login>
-        </properties>
-    </profile>
-    </profiles>
+<profile>
+  <id>coverage</id>
+  <build>
+   <plugins>
+    <plugin>
+    <groupId>org.jacoco</groupId>
+    <artifactId>jacoco-maven-plugin</artifactId>
+    <version>0.8.4</version>
+    <executions>
+      <execution>
+        <id>prepare-agent</id>
+        <goals>
+         <goal>prepare-agent</goal>
+        </goals>
+      </execution>
+      <execution>
+        <id>report</id>
+        <goals>
+         <goal>report</goal>
+        </goals>
+      </execution>
+    </executions>
+    </plugin>
+   </plugins>
+  </build>
+</profile>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
