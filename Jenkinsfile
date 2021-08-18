@@ -19,6 +19,11 @@ pipeline {
                 sh "mvn clean install"
             }
         }
+        stage('package') {
+            steps {
+                sh "mvn clean package"
+            }
+        }
         stage('test') {
             steps {
                 sh "mvn clean test"
@@ -35,12 +40,6 @@ pipeline {
             steps {
                 waitForQualityGate abortPipeline= true
             }   
-        }
-
-        stage('package') {
-            steps {
-                sh "mvn clean package"
-            }
         }
         stage('docker') {
             steps{
