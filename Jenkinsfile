@@ -14,14 +14,9 @@ pipeline {
                 git branch: 'dev', url: 'https://github.com/QuantumQuackDoctor/user-service.git'
             }
         }
-        // stage('build') {
-        //     steps {
-        //         sh "mvn clean install"
-        //     }
-        // }
-        stage('package') {
+        stage('build') {
             steps {
-                sh "mvn clean package"
+                sh "mvn clean install"
             }
         }
         stage('test') {
