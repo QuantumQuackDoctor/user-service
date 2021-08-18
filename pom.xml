@@ -9,6 +9,20 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
+    <profiles>
+    <profile>
+        <id>sonar</id>
+        <activation>
+            <activeByDefault>true</activeByDefault>
+        </activation>
+        <properties>
+          <sonar.host.url>https://sonarcloud.io/</sonar.host.url>
+          <sonar.organization>your_origination</sonar.organization>
+          <sonar.login>your_security_token</sonar.login>
+        </properties>
+    </profile>
+    </profiles>
+
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
