@@ -36,6 +36,11 @@ pipeline {
                 waitForQualityGate abortPipeline= true
             }   
         }
+        stage('package') {
+            steps {
+                sh "mvn clean package"
+            }   
+        }
         stage('docker') {
             steps{
                 script {
