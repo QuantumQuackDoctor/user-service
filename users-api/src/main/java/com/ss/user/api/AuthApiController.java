@@ -1,5 +1,6 @@
 package com.ss.user.api;
 
+import com.amazonaws.services.simpleemail.model.MessageRejectedException;
 import com.ss.user.errors.ConfirmationTokenExpiredException;
 import com.ss.user.errors.InvalidAdminEmailException;
 import com.ss.user.errors.InvalidCredentialsException;
@@ -14,16 +15,13 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import io.swagger.models.auth.In;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import javax.mail.MessagingException;
 import javax.validation.Valid;
-import javax.websocket.server.PathParam;
 import java.util.UUID;
 
 @Controller
@@ -56,7 +54,7 @@ public class AuthApiController {
             @ApiResponse(code = 400, message = "Missing field"),
             @ApiResponse(code = 409, message = "username or email invalid")})
     @ApiOperation(value = "Register", nickname = "putRegister", notes = "TODO Register new user, email validation will be sent", tags = {"auth",})
-    public ResponseEntity<String> putRegister(@RequestParam(defaultValue = "false") boolean admin, @RequestBody(required = true) @Valid @ApiParam("User to register") User user) throws MessagingException, InvalidCredentialsException, InvalidAdminEmailException {
+    public ResponseEntity<String> putRegister(@RequestParam(defaultValue = "false") boolean admin, @RequestBody(required = true) @Valid @ApiParam("User to register") User user) throws InvalidCredentialsException, InvalidAdminEmailException {
         //check if phone or email exist
         if (userService.emailAvailable(user.getEmail())) {
             //insert user
@@ -68,8 +66,13 @@ public class AuthApiController {
     }
 
     @ExceptionHandler(InvalidAdminEmailException.class)
-    public ResponseEntity<String> invalidEmailForAdmin(InvalidAdminEmailException exception){
+    public ResponseEntity<String> invalidEmailForAdmin(InvalidAdminEmailException exception) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(exception.getMessage());
+    }
+
+    @ExceptionHandler(MessageRejectedException.class)
+    public ResponseEntity<String> emailFailedToSend(MessageRejectedException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     /**
@@ -99,23 +102,18 @@ public class AuthApiController {
             @ApiResponse(code = 410, message = "Activation expired")
     })
     @ApiOperation(value = "activate", nickname = "Activate account", response = String.class)
-    public ResponseEntity<Void> postActivate(@PathVariable UUID token) throws MessagingException, ConfirmationTokenExpiredException, UserNotFoundException {
+    public ResponseEntity<Void> postActivate(@PathVariable UUID token) throws ConfirmationTokenExpiredException, UserNotFoundException {
         userService.activateAccount(token);
         return ResponseEntity.ok(null);
     }
 
     @ExceptionHandler(ConfirmationTokenExpiredException.class)
-    public ResponseEntity<String> tokenExpired(ConfirmationTokenExpiredException e){
+    public ResponseEntity<String> tokenExpired(ConfirmationTokenExpiredException e) {
         return new ResponseEntity<>("", HttpStatus.GONE);
     }
 
-    @ExceptionHandler(MessagingException.class)
-    public ResponseEntity<String> emailFailedToSend(MessagingException e){
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<String> userNotFound(UserNotFoundException e){
+    public ResponseEntity<String> userNotFound(UserNotFoundException e) {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
 
