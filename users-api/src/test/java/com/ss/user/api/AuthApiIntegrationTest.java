@@ -1,7 +1,7 @@
 package com.ss.user.api;
 
+import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.database.ormlibrary.user.*;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ss.user.model.User;
 import com.ss.user.model.UserSettings;
@@ -16,12 +16,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
-import javax.mail.Session;
-import javax.mail.internet.MimeMessage;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Month;
@@ -45,7 +42,7 @@ class AuthApiIntegrationTest {
     ArgumentCaptor<UserEntity> userCaptor;
 
     @MockBean
-    JavaMailSender javaMailSender;
+    AmazonSimpleEmailService emailService;
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -59,7 +56,6 @@ class AuthApiIntegrationTest {
     void setup() {
         when(userRepo.existsByEmail("email@invalid.com")).thenReturn(false);
         when(userRepo.existsByEmail("exists@invalid.com")).thenReturn(true);
-        when(javaMailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
     }
 
     @Test

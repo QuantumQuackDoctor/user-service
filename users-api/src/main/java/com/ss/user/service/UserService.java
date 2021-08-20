@@ -1,5 +1,7 @@
 package com.ss.user.service;
 
+import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
+import com.amazonaws.services.simpleemail.model.*;
 import com.database.ormlibrary.user.*;
 import com.ss.user.errors.ConfirmationTokenExpiredException;
 import com.ss.user.errors.InvalidAdminEmailException;
@@ -10,14 +12,9 @@ import com.ss.user.repo.UserRepo;
 import com.ss.user.repo.UserRoleRepo;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -32,25 +29,29 @@ public class UserService {
     private final ModelMapper mapper;
     private final PasswordEncoder passwordEncoder;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    private final JavaMailSender javaMailSender;
+    private final AmazonSimpleEmailService emailService;
     @Value("${user-portal-url}")
     private String userPortalURL;
     @Value("${admin-portal-url}")
     private String adminPortalURL;
+    @Value("${email.sender}")
+    private String emailFrom;
 
-    public UserService(UserRepo userRepo, UserRoleRepo userRoleRepo, ModelMapper mapper, PasswordEncoder passwordEncoder, JavaMailSender javaMailSender) {
+    public UserService(UserRepo userRepo, UserRoleRepo userRoleRepo, ModelMapper mapper, PasswordEncoder passwordEncoder, AmazonSimpleEmailService emailService) {
         this.userRepo = userRepo;
         this.userRoleRepo = userRoleRepo;
         this.mapper = mapper;
         this.passwordEncoder = passwordEncoder;
-        this.javaMailSender = javaMailSender;
+        this.emailService = emailService;
     }
 
     public boolean emailAvailable(String email) {
         return !userRepo.existsByEmail(email);
     }
 
-    public void insertUser(User user, boolean isAdmin) throws MessagingException, InvalidAdminEmailException {
+    private static final String admin = "admin";
+
+    public void insertUser(User user, boolean isAdmin) throws InvalidAdminEmailException {
         if (!emailAvailable(user.getEmail())) return;
         UserEntity toInsert = convertToEntity(user);
         //set defaults
@@ -60,20 +61,20 @@ public class UserService {
         toInsert.setPassword(passwordEncoder.encode(user.getPassword()));
 
         if (!isAdmin) {
-            Optional<UserRoleEntity> role;
-            if (!(role = userRoleRepo.findByRole("user")).isPresent()) {
+            Optional<UserRoleEntity> role = userRoleRepo.findByRole("user");
+            if (!role.isPresent()) {
                 role = Optional.of(userRoleRepo.save(new UserRoleEntity().setRole("user")));
             }
             toInsert.setUserRole(role.get());
         } else {
             if (user.getEmail().endsWith("@smoothstack.com")) {
-                Optional<UserRoleEntity> role;
-                if (!(role = userRoleRepo.findByRole("admin")).isPresent()) {
-                    role = Optional.of(userRoleRepo.save(new UserRoleEntity().setRole("admin")));
+                Optional<UserRoleEntity> role = userRoleRepo.findByRole(admin);
+                if (!role.isPresent()) {
+                    role = Optional.of(userRoleRepo.save(new UserRoleEntity().setRole(admin)));
                 }
                 toInsert.setUserRole(role.get());
             } else {
-                throw new InvalidAdminEmailException("invalid emawil for admin account");
+                throw new InvalidAdminEmailException("invalid email for admin account");
             }
         }
 
@@ -86,22 +87,31 @@ public class UserService {
         userRepo.save(toInsert);
     }
 
-    private void sendActivationEmail(String recipient, UUID uuid, String portalUrl) throws MessagingException {
-        MimeMessage confirmationEmail = javaMailSender.createMimeMessage();
+    private void sendActivationEmail(String recipient, UUID uuid, String portalUrl) {
 
         String activationLink = portalUrl + "/activate/" + uuid.toString();
 
-        confirmationEmail.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
-        confirmationEmail.setFrom("ezra.john.mitchell@gmail.com");
-        confirmationEmail.setContent(
-                String.format("<a href=\"%s\"><h1 style=\"background-color: #2aa4d2; color: #f79e0; padding: 1em; text-decoration: none;\">Activate your account</h1></a>", activationLink) +
-                        "\nFollow this link to activate your account ", "text/html");
-        confirmationEmail.setSubject("Scrumptious account activation");
+//        request.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
+//        request.setFrom("ezra.john.mitchell@gmail.com");
+//        request.setSubject("Scrumptious account activation");
 
-        javaMailSender.send(confirmationEmail);
+        String htmlBody = String.format(
+                "<a href=\"%s\"><h1 style=\"background-color: #2aa4d2; color: #f79e0; padding: 1em; text-decoration: none;\">Activate your account</h1></a>", activationLink) +
+                "\nFollow this link to activate your account ";
+        SendEmailRequest request = new SendEmailRequest()
+                .withDestination(new Destination().withToAddresses(recipient))
+                .withMessage(new Message()
+                        .withBody(new Body()
+                                .withHtml(new Content()
+                                        .withCharset("UTF-8").withData(htmlBody)))
+                        .withSubject(new Content()
+                                .withCharset("UTF-8").withData("Scrumptious Account Activation")))
+                .withSource(emailFrom);
+
+        emailService.sendEmail(request);
     }
 
-    public void activateAccount(UUID uuid) throws MessagingException, ConfirmationTokenExpiredException, UserNotFoundException {
+    public void activateAccount(UUID uuid) throws ConfirmationTokenExpiredException, UserNotFoundException {
         Optional<UserEntity> userEntityOptional = userRepo.findByActivationToken(uuid);
         if (userEntityOptional.isPresent()) {
             UserEntity userToActivate = userEntityOptional.get();
@@ -115,7 +125,7 @@ public class UserService {
                 userToActivate.setActivationToken(UUID.randomUUID());
                 userToActivate.setActivationTokenExpiration(Instant.now().plusMillis(7200000));
 
-                sendActivationEmail(userToActivate.getEmail(), userToActivate.getActivationToken(), userToActivate.getUserRole().getRole().equals("admin") ? adminPortalURL : userPortalURL);
+                sendActivationEmail(userToActivate.getEmail(), userToActivate.getActivationToken(), userToActivate.getUserRole().getRole().equals(admin) ? adminPortalURL : userPortalURL);
                 userRepo.save(userToActivate);
                 throw new ConfirmationTokenExpiredException("Confirmation token expired");
             }
@@ -159,7 +169,6 @@ public class UserService {
         user.getSettings().getNotifications().setText(entity.getSettings().getNotifications().getPhoneOption());
         user.getSettings().setTheme(entity.getSettings().getThemes().getDark() ? UserSettings.ThemeEnum.DARK : UserSettings.ThemeEnum.LIGHT);
 
-        //delete password
         user.setPassword(null);
         return user;
     }

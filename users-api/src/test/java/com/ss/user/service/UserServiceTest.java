@@ -1,5 +1,7 @@
 package com.ss.user.service;
 
+import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
+import com.amazonaws.services.simpleemail.model.SendEmailRequest;
 import com.database.ormlibrary.user.*;
 import com.ss.user.errors.ConfirmationTokenExpiredException;
 import com.ss.user.errors.InvalidAdminEmailException;
@@ -9,19 +11,15 @@ import com.ss.user.model.User;
 import com.ss.user.model.UserSettings;
 import com.ss.user.model.UserSettingsNotifications;
 import com.ss.user.repo.UserRepo;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.internet.MimeMessage;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Month;
@@ -32,29 +30,27 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+
 @SpringBootTest
 class UserServiceTest {
 
     @MockBean(UserRepo.class)
     UserRepo userRepo;
     @MockBean
-    JavaMailSender javaMailSender;
+    AmazonSimpleEmailService emailSender;
     @Captor
-    ArgumentCaptor<MimeMessage> emailCaptor;
+    ArgumentCaptor<SendEmailRequest> emailCaptor;
     @Captor
     ArgumentCaptor<UserEntity> userCaptor;
     @Autowired
     UserService userService;
     @Autowired
     PasswordEncoder passwordEncoder;
-
-    @BeforeEach
-    void setup() {
-        when(javaMailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
-    }
+    @Value("${email.sender}")
+    String emailFrom;
 
     @Test
-    void insertUser() throws MessagingException, InvalidAdminEmailException {
+    void insertUser() throws InvalidAdminEmailException {
         when(userRepo.save(userCaptor.capture())).thenReturn(null);
 
         //create sample user to insert
@@ -81,13 +77,13 @@ class UserServiceTest {
         assertFalse(insertedUser.getSettings().getNotifications().getPhoneOption());
         assertTrue(insertedUser.getSettings().getThemes().getDark());
 
-        verify(javaMailSender).send(emailCaptor.capture());
+        verify(emailSender).sendEmail(emailCaptor.capture());
 
-        assertEquals("ezra.john.mitchell@gmail.com", emailCaptor.getValue().getFrom()[0].toString());
+        assertEquals(emailFrom, emailCaptor.getValue().getSource());
     }
 
     @Test
-    void insertAdmin() throws MessagingException, InvalidAdminEmailException {
+    void insertAdmin() throws InvalidAdminEmailException {
         when(userRepo.save(userCaptor.capture())).thenReturn(null);
 
         //create sample user to insert
@@ -115,13 +111,13 @@ class UserServiceTest {
         assertFalse(insertedUser.getSettings().getNotifications().getPhoneOption());
         assertTrue(insertedUser.getSettings().getThemes().getDark());
 
-        verify(javaMailSender).send(emailCaptor.capture());
+        verify(emailSender).sendEmail(emailCaptor.capture());
 
-        assertEquals("ezra.john.mitchell@gmail.com", emailCaptor.getValue().getFrom()[0].toString());
+        assertEquals(emailFrom, emailCaptor.getValue().getSource());
     }
 
     @Test
-    void insertInvalidAdmin() throws MessagingException, InvalidCredentialsException {
+    void insertInvalidAdmin() throws InvalidCredentialsException {
         when(userRepo.save(userCaptor.capture())).thenReturn(null);
 
         //create sample user to insert
@@ -178,7 +174,7 @@ class UserServiceTest {
     }
 
     @Test
-    void activateUser_WithValidToken() throws UserNotFoundException, MessagingException, ConfirmationTokenExpiredException {
+    void activateUser_WithValidToken() throws UserNotFoundException, ConfirmationTokenExpiredException {
         UUID token = UUID.randomUUID();
         UserEntity sampleUser = createSampleUserEntity();
         sampleUser.setActivationToken(token);
@@ -192,7 +188,7 @@ class UserServiceTest {
     }
 
     @Test
-    void activateUser_WithExpiredToken() throws UserNotFoundException, MessagingException {
+    void activateUser_WithExpiredToken() throws UserNotFoundException {
         UUID token = UUID.randomUUID();
         UserEntity sampleUser = createSampleUserEntity();
         sampleUser.setActivationToken(token);
@@ -210,7 +206,7 @@ class UserServiceTest {
     }
 
     @Test
-    void activateUser_withInvalidToken() throws MessagingException, ConfirmationTokenExpiredException {
+    void activateUser_withInvalidToken() throws ConfirmationTokenExpiredException {
         UUID token = UUID.randomUUID();
         when(userRepo.findByActivationToken(token)).thenReturn(Optional.empty());
 

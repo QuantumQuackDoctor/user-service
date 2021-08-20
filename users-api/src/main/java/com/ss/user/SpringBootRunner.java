@@ -14,7 +14,6 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @SpringBootApplication
 @Import(SecurityConfig.class)
@@ -22,7 +21,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EntityScan("com.database.ormlibrary")
 public class SpringBootRunner implements CommandLineRunner {
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         new SpringApplication(SpringBootRunner.class).run(args);
     }
 
@@ -39,21 +38,8 @@ public class SpringBootRunner implements CommandLineRunner {
     }
 
     @Bean
-    public WebMvcConfigurer webConfigurer() {
-        return new WebMvcConfigurer() {
-            /*@Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                        .allowedOrigins("*")
-                        .allowedMethods("*")
-                        .allowedHeaders("Content-Type");
-            }*/
-        };
-    }
-
-    @Bean
     public CommandLineRunner initialization(UserRoleRepo userRoleRepo) {
-        return (val) -> {
+        return val -> {
             if (!userRoleRepo.findByRole("user").isPresent()) {
                 userRoleRepo.save(new UserRoleEntity().setRole("user"));
             }
@@ -72,7 +58,6 @@ public class SpringBootRunner implements CommandLineRunner {
         public int getExitCode() {
             return 10;
         }
-
     }
 
 }

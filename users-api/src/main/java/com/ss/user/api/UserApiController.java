@@ -51,7 +51,7 @@ public class UserApiController {
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<String> badUser(UserNotFoundException e){
+    public ResponseEntity<String> badUser(UserNotFoundException e) {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
 
@@ -75,7 +75,7 @@ public class UserApiController {
     }, tags = {"user",})
 
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> deleteUser(Authentication authentication)  {
+    public ResponseEntity<Void> deleteUser(Authentication authentication) {
         AuthDetails authDetails = (AuthDetails) authentication.getPrincipal();
         userService.deleteUser(authDetails.getId());
         return ResponseEntity.ok(null);
