@@ -49,6 +49,8 @@ public class UserService {
         return !userRepo.existsByEmail(email);
     }
 
+    private static final String admin = "admin";
+
     public void insertUser(User user, boolean isAdmin) throws InvalidAdminEmailException {
         if (!emailAvailable(user.getEmail())) return;
         UserEntity toInsert = convertToEntity(user);
@@ -59,20 +61,20 @@ public class UserService {
         toInsert.setPassword(passwordEncoder.encode(user.getPassword()));
 
         if (!isAdmin) {
-            Optional<UserRoleEntity> role;
-            if (!(role = userRoleRepo.findByRole("user")).isPresent()) {
+            Optional<UserRoleEntity> role = userRoleRepo.findByRole("user");
+            if (!role.isPresent()) {
                 role = Optional.of(userRoleRepo.save(new UserRoleEntity().setRole("user")));
             }
             toInsert.setUserRole(role.get());
         } else {
             if (user.getEmail().endsWith("@smoothstack.com")) {
-                Optional<UserRoleEntity> role;
-                if (!(role = userRoleRepo.findByRole("admin")).isPresent()) {
-                    role = Optional.of(userRoleRepo.save(new UserRoleEntity().setRole("admin")));
+                Optional<UserRoleEntity> role = userRoleRepo.findByRole(admin);
+                if (!role.isPresent()) {
+                    role = Optional.of(userRoleRepo.save(new UserRoleEntity().setRole(admin)));
                 }
                 toInsert.setUserRole(role.get());
             } else {
-                throw new InvalidAdminEmailException("invalid emawil for admin account");
+                throw new InvalidAdminEmailException("invalid email for admin account");
             }
         }
 
@@ -98,12 +100,12 @@ public class UserService {
                 "\nFollow this link to activate your account ";
         SendEmailRequest request = new SendEmailRequest()
                 .withDestination(new Destination().withToAddresses(recipient))
-                        .withMessage(new Message()
-                                .withBody(new Body()
-                                        .withHtml(new Content()
-                                                .withCharset("UTF-8").withData(htmlBody)))
-                                .withSubject(new Content()
-                                        .withCharset("UTF-8").withData("Scrumptious Account Activation")))
+                .withMessage(new Message()
+                        .withBody(new Body()
+                                .withHtml(new Content()
+                                        .withCharset("UTF-8").withData(htmlBody)))
+                        .withSubject(new Content()
+                                .withCharset("UTF-8").withData("Scrumptious Account Activation")))
                 .withSource(emailFrom);
 
         emailService.sendEmail(request);
@@ -123,7 +125,7 @@ public class UserService {
                 userToActivate.setActivationToken(UUID.randomUUID());
                 userToActivate.setActivationTokenExpiration(Instant.now().plusMillis(7200000));
 
-                sendActivationEmail(userToActivate.getEmail(), userToActivate.getActivationToken(), userToActivate.getUserRole().getRole().equals("admin") ? adminPortalURL : userPortalURL);
+                sendActivationEmail(userToActivate.getEmail(), userToActivate.getActivationToken(), userToActivate.getUserRole().getRole().equals(admin) ? adminPortalURL : userPortalURL);
                 userRepo.save(userToActivate);
                 throw new ConfirmationTokenExpiredException("Confirmation token expired");
             }
@@ -167,7 +169,6 @@ public class UserService {
         user.getSettings().getNotifications().setText(entity.getSettings().getNotifications().getPhoneOption());
         user.getSettings().setTheme(entity.getSettings().getThemes().getDark() ? UserSettings.ThemeEnum.DARK : UserSettings.ThemeEnum.LIGHT);
 
-        //delete password
         user.setPassword(null);
         return user;
     }

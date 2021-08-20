@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Optional;
 
@@ -42,35 +41,35 @@ class AuthServiceTest {
     }
 
     @Test
-    void Authenticate_withInvalidPassword_ShouldThrowInvalidCredentials(){
+    void Authenticate_withInvalidPassword_ShouldThrowInvalidCredentials() {
         given(authRepo.findByEmail("email")).willReturn(Optional.ofNullable(createSampleUser()));
 
         AuthRequest request = createSampleAuthRequest();
         request.setPassword("invalid password");
 
-        try{
+        try {
             authService.authenticate(request);
             fail();
-        }catch (Exception ignored){
+        } catch (Exception ignored) {
             //exception thrown
         }
     }
 
     @Test
-    void Authenticate_WithInvalidUser_ShouldThrowInvalidCredentials(){
+    void Authenticate_WithInvalidUser_ShouldThrowInvalidCredentials() {
         given(authRepo.findByEmail("email")).willReturn(Optional.empty());
 
         AuthRequest request = createSampleAuthRequest();
 
-        try{
+        try {
             authService.authenticate(request);
             fail();
-        }catch (Exception ignored){ //I can't remember the specific exception
+        } catch (Exception ignored) { //I can't remember the specific exception
             //exception thrown
         }
     }
 
-    private UserEntity createSampleUser(){
+    private UserEntity createSampleUser() {
         return new UserEntity()
                 .setEmail("email")
                 .setPassword(passwordEncoder.encode("password"))
@@ -78,7 +77,7 @@ class AuthServiceTest {
                 .setUserRole(new UserRoleEntity().setRole("user"));
     }
 
-    private AuthRequest createSampleAuthRequest(){
+    private AuthRequest createSampleAuthRequest() {
         AuthRequest request = new AuthRequest();
         request.setEmail("email"); //matches the email specified above
         request.setPassword("password"); //also matches

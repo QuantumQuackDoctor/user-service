@@ -3,32 +3,18 @@ package com.ss.user.api;
 import com.ss.user.model.User;
 import io.swagger.annotations.*;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.NativeWebRequest;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import java.util.List;
-import java.util.Optional;
 
 @Controller
 @RequestMapping(value = "/accounts")
 public class UsersApiController {
-
-    private final NativeWebRequest request;
-
-    @org.springframework.beans.factory.annotation.Autowired
-    public UsersApiController(NativeWebRequest request) {
-        this.request = request;
-    }
-
-    public Optional<NativeWebRequest> getRequest() {
-        return Optional.ofNullable(request);
-    }
 
     /**
      * DELETE /users : Admin Delete User
@@ -58,7 +44,6 @@ public class UsersApiController {
     @PreAuthorize("hasRole('admin')")
     public ResponseEntity<Void> deleteUsers(@ApiParam(value = "userId") @Valid @RequestBody(required = false) String body) {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
-
     }
 
     /**
@@ -96,17 +81,7 @@ public class UsersApiController {
 
     @PreAuthorize("hasRole('admin')")
     public ResponseEntity<List<User>> getUsers(@ApiParam(value = "Overwrites all other properties") @Valid @RequestParam(value = "id", required = false) String id, @ApiParam(value = "Overwrites all properties except id") @Valid @RequestParam(value = "email", required = false) String email, @ApiParam(value = "fuzzy string match, returns all with above %80ish match") @Valid @RequestParam(value = "name", required = false) String name, @ApiParam(value = "filters all veterans") @Valid @RequestParam(value = "veteran", required = false) Boolean veteran, @ApiParam(value = "filters >= points") @Valid @RequestParam(value = "points", required = false) Integer points, @ApiParam(value = "filters by role") @Valid @RequestParam(value = "role", required = false) String role, @Min(0) @ApiParam(value = "page to return") @Valid @RequestParam(value = "page", required = false) Integer page, @Min(1) @ApiParam(value = "number of items in page") @Valid @RequestParam(value = "size", required = false) Integer size) {
-        getRequest().ifPresent(request -> {
-            for (MediaType mediaType : MediaType.parseMediaTypes(request.getHeader("Accept"))) {
-                if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
-                    String exampleString = "{ \"veteranStatus\" : true, \"firstName\" : \"firstName\", \"lastName\" : \"lastName\", \"settings\" : { \"theme\" : \"light\", \"notifications\" : { \"text\" : true, \"email\" : true } }, \"password\" : \"password\", \"DOB\" : \"2021-02-10T00:00:00.000Z\", \"id\" : \"id\", \"email\" : \"email@example.com\", \"points\" : 0 }";
-                    ApiUtil.setExampleResponse(request, "application/json", exampleString);
-                    break;
-                }
-            }
-        });
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
-
     }
 
     /**
@@ -136,20 +111,6 @@ public class UsersApiController {
 
     @PreAuthorize("hasRole('admin')")
     public ResponseEntity<User> putUsers(@ApiParam(value = "") @Valid @RequestBody(required = false) User user) {
-        getRequest().ifPresent(request -> {
-            for (MediaType mediaType : MediaType.parseMediaTypes(request.getHeader("Accept"))) {
-                if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
-                    String exampleString = "{ \"veteranStatus\" : true, \"firstName\" : \"firstName\", \"lastName\" : \"lastName\", \"settings\" : { \"theme\" : \"light\", \"notifications\" : { \"text\" : true, \"email\" : true } }, \"password\" : \"password\", \"DOB\" : \"2021-02-10T00:00:00.000Z\", \"id\" : \"id\", \"email\" : \"email@example.com\", \"points\" : 0 }";
-                    ApiUtil.setExampleResponse(request, "application/json", exampleString);
-                    break;
-                }
-                if (mediaType.isCompatibleWith(MediaType.valueOf("application/xml"))) {
-                    String exampleString = "<User> <id>aeiou</id> <email>email@example.com</email> <firstName>aeiou</firstName> <lastName>aeiou</lastName> <DOB>2021-02-10T00:00:00.000Z</DOB> <password>aeiou</password> <veteranStatus>true</veteranStatus> <points>123</points> </User>";
-                    ApiUtil.setExampleResponse(request, "application/xml", exampleString);
-                    break;
-                }
-            }
-        });
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
 
     }
@@ -182,6 +143,5 @@ public class UsersApiController {
     @PreAuthorize("hasRole('admin')")
     public ResponseEntity<Void> updateUser(@ApiParam(value = "User to update") @Valid @RequestBody(required = false) User user) {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
-
     }
 }

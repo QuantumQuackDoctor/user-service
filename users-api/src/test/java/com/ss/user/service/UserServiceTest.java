@@ -83,7 +83,7 @@ class UserServiceTest {
     }
 
     @Test
-    void insertAdmin() throws  InvalidAdminEmailException {
+    void insertAdmin() throws InvalidAdminEmailException {
         when(userRepo.save(userCaptor.capture())).thenReturn(null);
 
         //create sample user to insert
@@ -117,7 +117,7 @@ class UserServiceTest {
     }
 
     @Test
-    void insertInvalidAdmin() throws  InvalidCredentialsException {
+    void insertInvalidAdmin() throws InvalidCredentialsException {
         when(userRepo.save(userCaptor.capture())).thenReturn(null);
 
         //create sample user to insert
@@ -206,7 +206,7 @@ class UserServiceTest {
     }
 
     @Test
-    void activateUser_withInvalidToken() throws  ConfirmationTokenExpiredException {
+    void activateUser_withInvalidToken() throws ConfirmationTokenExpiredException {
         UUID token = UUID.randomUUID();
         when(userRepo.findByActivationToken(token)).thenReturn(Optional.empty());
 

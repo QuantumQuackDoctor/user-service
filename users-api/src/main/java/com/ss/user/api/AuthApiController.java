@@ -25,7 +25,6 @@ import javax.validation.Valid;
 import java.util.UUID;
 
 @Controller
-@CrossOrigin(origins = "*")
 @RequestMapping(value = "/accounts")
 public class AuthApiController {
 
@@ -54,14 +53,14 @@ public class AuthApiController {
             @ApiResponse(code = 400, message = "Missing field"),
             @ApiResponse(code = 409, message = "username or email invalid")})
     @ApiOperation(value = "Register", nickname = "putRegister", notes = "TODO Register new user, email validation will be sent", tags = {"auth",})
-    public ResponseEntity<String> putRegister(@RequestParam(defaultValue = "false") boolean admin, @RequestBody(required = true) @Valid @ApiParam("User to register") User user) throws InvalidCredentialsException, InvalidAdminEmailException {
+    public ResponseEntity<String> putRegister(@RequestParam(defaultValue = "false") boolean admin, @RequestBody(required = true) @Valid @ApiParam("User to register") User user) throws InvalidAdminEmailException {
         //check if phone or email exist
         if (userService.emailAvailable(user.getEmail())) {
             //insert user
             userService.insertUser(user, admin);
             return ResponseEntity.ok("Account created");
         } else {
-            return new ResponseEntity<String>("Email taken", HttpStatus.CONFLICT);
+            return new ResponseEntity<>("Email taken", HttpStatus.CONFLICT);
         }
     }
 
