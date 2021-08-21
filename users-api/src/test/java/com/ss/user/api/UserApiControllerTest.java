@@ -1,5 +1,6 @@
 package com.ss.user.api;
 
+import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.database.ormlibrary.user.NotificationsEntity;
 import com.database.ormlibrary.user.SettingsEntity;
 import com.database.ormlibrary.user.ThemesEntity;
@@ -13,7 +14,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
@@ -37,7 +37,7 @@ class UserApiControllerTest {
     UserRepo userRepo;
 
     @MockBean
-    JavaMailSender javaMailSender;
+    AmazonSimpleEmailService emailService;
 
     @Autowired
     MockMvc mockMvc;

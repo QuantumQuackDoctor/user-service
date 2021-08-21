@@ -1,13 +1,10 @@
 package com.ss.user.api;
 
-import com.database.security.AuthRepo;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ss.user.errors.InvalidCredentialsException;
 import com.ss.user.model.*;
 import com.ss.user.service.AuthService;
 import com.ss.user.service.UserService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +12,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -51,8 +47,8 @@ class AuthApiControllerTest {
 
 
         mockMvc.perform(put("/accounts/register")
-                .content(mapper.writeValueAsString(testInsert))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(mapper.writeValueAsString(testInsert))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
         verify(userService, times(1)).insertUser(testInsert, false);
@@ -66,8 +62,8 @@ class AuthApiControllerTest {
         testInsert.setPassword(null); //invalidate input
 
         mockMvc.perform(put("/accounts/register")
-                .content(mapper.writeValueAsString(testInsert))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(mapper.writeValueAsString(testInsert))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
 
         verify(userService, times(0)).insertUser(testInsert, false); //verify no user was inserted
@@ -81,8 +77,8 @@ class AuthApiControllerTest {
 
 
         mockMvc.perform(put("/accounts/register")
-                .content(mapper.writeValueAsString(testInsert))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(mapper.writeValueAsString(testInsert))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isConflict());
 
         verify(userService, times(0)).insertUser(testInsert, false); //verify no user was inserted
@@ -109,20 +105,20 @@ class AuthApiControllerTest {
         when(authService.authenticate(testRequest)).thenReturn(createSampleAuthResponse());
 
         mockMvc.perform(post("/accounts/login")
-                .content(mapper.writeValueAsString(testRequest))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(mapper.writeValueAsString(testRequest))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("jwt").exists())
                 .andExpect(status().isOk());
     }
 
     @Test
-    void Login_WithInvalidCredentials_ShouldReturnBadRequest() throws  Exception {
+    void Login_WithInvalidCredentials_ShouldReturnBadRequest() throws Exception {
         AuthRequest testRequest = createSampleAuthRequest();
         when(authService.authenticate(testRequest)).thenThrow(new InvalidCredentialsException(""));
 
         mockMvc.perform(post("/accounts/login")
-                .content(mapper.writeValueAsString(testRequest))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(mapper.writeValueAsString(testRequest))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
 

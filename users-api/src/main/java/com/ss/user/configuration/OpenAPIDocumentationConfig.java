@@ -1,9 +1,7 @@
 package com.ss.user.configuration;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 import org.springframework.web.util.UriComponentsBuilder;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.RequestHandlerSelectors;
@@ -24,22 +22,22 @@ public class OpenAPIDocumentationConfig {
 
     ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-            .title("User")
-            .description("API specification for the users microservice")
-            .license("")
-            .licenseUrl("http://unlicense.org")
-            .termsOfServiceUrl("")
-            .version("1.0")
-            .contact(new Contact("","", "ezramitchell@smoothstack.com"))
-            .build();
+                .title("User")
+                .description("API specification for the users microservice")
+                .license("")
+                .licenseUrl("http://unlicense.org")
+                .termsOfServiceUrl("")
+                .version("1.0")
+                .contact(new Contact("", "", "ezramitchell@smoothstack.com"))
+                .build();
     }
 
     @Bean
     public Docket customImplementation(ServletContext servletContext) {
         return new Docket(DocumentationType.SWAGGER_2)
                 .select()
-                    .apis(RequestHandlerSelectors.basePackage("com.ss.user.api"))
-                    .build()
+                .apis(RequestHandlerSelectors.basePackage("com.ss.user.api"))
+                .build()
                 .pathProvider(new BasePathAwareRelativePathProvider(servletContext, ""))
                 .directModelSubstitute(java.time.LocalDate.class, java.sql.Date.class)
                 .directModelSubstitute(java.time.OffsetDateTime.class, java.util.Date.class)
@@ -56,7 +54,7 @@ public class OpenAPIDocumentationConfig {
 
         @Override
         protected String applicationPath() {
-            return  Paths.removeAdjacentForwardSlashes(UriComponentsBuilder.fromPath(super.applicationPath()).path(basePath).build().toString());
+            return Paths.removeAdjacentForwardSlashes(UriComponentsBuilder.fromPath(super.applicationPath()).path(basePath).build().toString());
         }
 
         @Override
