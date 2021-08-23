@@ -1,7 +1,6 @@
 package com.ss.user.api;
 
 import com.database.security.AuthDetails;
-import com.ss.user.errors.RequiredFieldException;
 import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.User;
 import com.ss.user.service.UserService;
@@ -108,37 +107,17 @@ public class UserApiController {
             consumes = {"application/json", "application/xml"}
     )
 
-    @PreAuthorize("hasAuthority('user')")
-    public ResponseEntity<User> patchUser(@ApiParam(value = "New user data, non null properties will be updated") @Valid @RequestBody(required = false) User user) throws UserNotFoundException, RequiredFieldException {
+    /*@PreAuthorize("hasAuthority('user')")*/
+    @PreAuthorize("permitAll")
+    public ResponseEntity<User> patchUser(@ApiParam(value = "New user data, non null properties will be updated") @Valid @RequestBody(required = false) User user) throws UserNotFoundException {
         return ResponseEntity.ok(userService.updateProfile(user));
     }
 
-    /**
-     * PATCH /user : Update list of user orders
-     *
-     * @param user New user data, non null properties will be updated (optional)
-     * @return Update Successful (status code 200)
-     * or Access token is missing or invalid (status code 401)
-     * or Forbidden (status code 403)
-     * or Not Found, something weird happened. Recommended to reauthenticate (status code 404)
-     */
-    @ApiOperation(value = "Update Account Order Details", nickname = "updateOrders", notes = "Updates Orders", authorizations = {
 
-            @Authorization(value = "JWT")
-    }, tags = {"user",})
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Update Successful"),
-            @ApiResponse(code = 401, message = "Access token is missing or invalid", response = String.class),
-            @ApiResponse(code = 403, message = "Forbidden"),
-            @ApiResponse(code = 404, message = "Not Found, something weird happened. Recommended to reauthenticate")})
-    @PatchMapping(
-            value = "/userorders",
-            produces = {"application/json"},
-            consumes = {"application/json", "application/xml"}
-    )
 
-    @PreAuthorize("hasRole('user')")
-    public ResponseEntity<User> updateOrders(@ApiParam(value = "New user data, non null properties will be updated") @Valid @RequestBody(required = false) User user) throws UserNotFoundException {
-        return ResponseEntity.ok (userService.updateOrders(user));
-    }
+/*    @GetMapping(path = "/allusers", produces = {"application/json"})
+    @PreAuthorize("permitAll")
+    public ResponseEntity<List<User>> getAllUsers() {
+        return ResponseEntity.ok (userService.getAllUsers());
+    }*/
 }

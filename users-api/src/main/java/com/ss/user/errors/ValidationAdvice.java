@@ -21,11 +21,4 @@ public class ValidationAdvice {
                         fieldError -> Optional.ofNullable(fieldError.getDefaultMessage()).orElse(""))
         ));
     }
-
-    @ExceptionHandler (RequiredFieldException.class)
-    public ResponseEntity<Object> handleRequiredFieldException (RequiredFieldException e){
-        return ResponseEntity.badRequest().body(
-                e.getMessage()
-        );
-    }
 }

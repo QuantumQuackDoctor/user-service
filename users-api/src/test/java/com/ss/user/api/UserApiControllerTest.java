@@ -109,7 +109,7 @@ class UserApiControllerTest {
         userDTO.setPassword("password");
         userDTO.setDOB(LocalDate.parse("2002-07-20").toString());
         userDTO.setPoints(233434);
-        userDTO.setVeteranStatus(false);
+        userDTO.setIsVeteran(false);
         userDTO.setSettings(UserSettings.builder().notifications(
                 UserSettingsNotifications.builder().email(true).text(true).build()).theme(
                         UserSettings.ThemeEnum.DARK

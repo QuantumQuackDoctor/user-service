@@ -2,7 +2,6 @@ package com.ss.user.service;
 
 import com.database.ormlibrary.order.OrderEntity;
 import com.database.ormlibrary.user.*;
-import com.ss.user.errors.RequiredFieldException;
 import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.User;
 import com.ss.user.model.UserSettings;
@@ -73,13 +72,11 @@ public class UserService {
         userRepo.deleteById(id);
     }
 
-    public User updateProfile (User user) throws UserNotFoundException, RequiredFieldException {
+    public User updateProfile (User user) throws UserNotFoundException {
         Optional<UserEntity> entityOptional = userRepo.findById(user.getId());
         if (entityOptional.isPresent()){
             UserEntity entity = entityOptional.get();
             UserEntity updateEntity = convertToEntity(user);
-            if (!updateEntity.checkRequiredFields())
-                throw new RequiredFieldException("Required Fields Not Met.");
             entity.setEmail(updateEntity.getEmail());
             entity.setBirthDate(updateEntity.getBirthDate());
             entity.setPhone(updateEntity.getPhone());
@@ -89,19 +86,6 @@ public class UserService {
         }else{
             throw new UserNotFoundException("User not found!");
         }
-    }
-
-    public User updateOrders (User user) throws UserNotFoundException {
-        if (userRepo.findById(user.getId()).isPresent()){
-            UserEntity entity = userRepo.findById (user.getId()).get();
-
-            List<OrderEntity> orderEntityList = new ArrayList<>();
-            orderRepo.findAllById(user.getOrders()).forEach(orderEntityList :: add);
-            entity.setOrderList(orderEntityList);
-            return convertToDTO(entity);
-        }
-            throw new UserNotFoundException("User not found!");
-
     }
 
     public UserEntity convertToEntity(User user) {
@@ -125,6 +109,8 @@ public class UserService {
 
     public User convertToDTO(UserEntity entity){
         User user = mapper.map(entity, User.class);
+
+        user.setIsVeteran(entity.getVeteran());
         user.setDOB(entity.getBirthDate().format((formatter)));
         user.getSettings().getNotifications().setEmail(entity.getSettings().getNotifications().getEmail());
         user.getSettings().getNotifications().setText(entity.getSettings().getNotifications().getPhoneOption());

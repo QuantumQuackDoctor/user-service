@@ -43,18 +43,18 @@ public class User {
     @NotBlank
     private String DOB;
 
-    @JsonProperty("password")
     @ApiModelProperty(value = "To be used in account creation only, DELETE THIS WHEN SENDING!!!")
     @NotBlank(message = "password required")
     @Size(min = 5, max = 32, message = "password needs to be 5-32 characters")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     @JsonProperty("phone")
     private String phone;
 
-    @JsonProperty("veteranStatus")
+    @JsonProperty("isVeteran")
     @NotNull
-    private Boolean veteranStatus;
+    private Boolean isVeteran;
 
     @JsonProperty("points")
     private Integer points;
@@ -79,14 +79,14 @@ public class User {
                 Objects.equals(this.lastName, user.lastName) &&
                 Objects.equals(this.DOB, user.DOB) &&
                 Objects.equals(this.password, user.password) &&
-                Objects.equals(this.veteranStatus, user.veteranStatus) &&
+                Objects.equals(this.isVeteran, user.isVeteran) &&
                 Objects.equals(this.points, user.points) &&
                 Objects.equals(this.settings, user.settings);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, email, firstName, lastName, DOB, password, veteranStatus, points, settings);
+        return Objects.hash(id, email, firstName, lastName, DOB, password, isVeteran, points, settings);
     }
 
     @Override
@@ -99,7 +99,7 @@ public class User {
                 "    lastName: " + toIndentedString(lastName) + "\n" +
                 "    DOB: " + toIndentedString(DOB) + "\n" +
                 "    password: " + toIndentedString(password) + "\n" +
-                "    veteranStatus: " + toIndentedString(veteranStatus) + "\n" +
+                "    veteranStatus: " + toIndentedString(isVeteran) + "\n" +
                 "    points: " + toIndentedString(points) + "\n" +
                 "    settings: " + toIndentedString(settings) + "\n" +
                 "}";

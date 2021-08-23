@@ -1,11 +1,9 @@
 package com.ss.user.service;
 
-import com.database.ormlibrary.order.OrderEntity;
 import com.database.ormlibrary.user.NotificationsEntity;
 import com.database.ormlibrary.user.SettingsEntity;
 import com.database.ormlibrary.user.ThemesEntity;
 import com.database.ormlibrary.user.UserEntity;
-import com.ss.user.errors.RequiredFieldException;
 import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.User;
 import com.ss.user.model.UserSettings;
@@ -54,7 +52,7 @@ class UserServiceTest {
         testInsert.setPassword("password"); //should be hashed
         testInsert.setDOB("2002-07-20"); //test local date parsing
         testInsert.setPoints(233434); //should be overwritten
-        testInsert.setVeteranStatus(false);
+        testInsert.setIsVeteran(false);
         UserSettings settings = new UserSettings();
         settings.setTheme(UserSettings.ThemeEnum.DARK);
         UserSettingsNotifications notifications = new UserSettingsNotifications();
@@ -115,7 +113,7 @@ class UserServiceTest {
     }
 
     @Test
-    void updateUserProfile() throws UserNotFoundException, RequiredFieldException {
+    void updateUserProfile() throws UserNotFoundException {
         when(userRepo.findById(anyLong())).thenReturn(Optional.of(sampleUserEntity()));
 
         User updateSample = sampleUser();
@@ -132,42 +130,7 @@ class UserServiceTest {
     }
 
     @Test
-    void updateProfile_RequiredFieldsException (){
-        when (userRepo.findById(anyLong())).thenReturn(Optional.of (sampleUserEntity()));
-        User sampleUser = sampleUser();
-        sampleUser.setFirstName("");
-        assertThrows (RequiredFieldException.class, () -> userService.updateProfile(sampleUser));
-    }
-
-    @Test
     void updateUserNotFound() {
-        assertThrows(UserNotFoundException.class, () -> userService.updateOrders(new User()));
-    }
-
-    @Test
-    void addUserOrder () throws UserNotFoundException {
-        OrderEntity sampleOrder = new OrderEntity().setId(518L)
-                .setActive(true)
-                .setAddress("123 Test Address");
-        List<OrderEntity> sampleOrderList = new ArrayList<>();
-        sampleOrderList.add(sampleOrder);
-
-        when(userRepo.findById(anyLong())).thenReturn(Optional.of(sampleUserEntity()));
-        when(orderRepo.findAllById(any())).thenReturn(sampleOrderList);
-
-        List<Long> userOrdersDTO = new ArrayList<>();
-        User updateSample = sampleUser();
-        sampleOrderList.forEach(order -> userOrdersDTO.add (order.getId()));
-        updateSample.setOrders(userOrdersDTO);
-
-        User updatedUser = userService.updateOrders(updateSample);
-
-        assertEquals(updatedUser.getOrders().size(), 1);
-        assertEquals(updatedUser.getOrders().get(0), 518L);
-    }
-
-    @Test
-    void updateUserOrderNotFound() {
         assertThrows(UserNotFoundException.class, () -> userService.updateProfile(new User()));
     }
 }
