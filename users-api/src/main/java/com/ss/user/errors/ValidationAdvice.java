@@ -1,5 +1,6 @@
 package com.ss.user.errors;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -19,5 +20,10 @@ public class ValidationAdvice {
                 Collectors.toMap(FieldError::getField,
                         fieldError -> Optional.ofNullable(fieldError.getDefaultMessage()).orElse(""))
         ));
+    }
+
+    @ExceptionHandler(EmailTakenException.class)
+    public ResponseEntity<String> handleEmailTaken(EmailTakenException e){
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
     }
 }
