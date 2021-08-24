@@ -16,7 +16,7 @@ public class ValidationAdvice {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        return ResponseEntity.badRequest().body(ex.getBindingResult().getAllErrors().stream().map(objectError -> (FieldError) objectError).collect(
+        return ResponseEntity.badRequest().body(ex.getBindingResult().getAllErrors().stream().map(FieldError.class::cast).collect(
                 Collectors.toMap(FieldError::getField,
                         fieldError -> Optional.ofNullable(fieldError.getDefaultMessage()).orElse(""))
         ));

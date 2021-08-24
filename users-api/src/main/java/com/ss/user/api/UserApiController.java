@@ -46,7 +46,7 @@ public class UserApiController {
             @Authorization(value = "JWT")
     }, tags = {"user",})
 
-    @PreAuthorize("hasAuthority('user')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<User> getUser(Authentication authentication) throws UserNotFoundException {
         UserDetails authDetails = (UserDetails) authentication.getPrincipal();
         User DTO = userService.getUser(authDetails.getUsername());
@@ -119,4 +119,5 @@ public class UserApiController {
         throw new InvalidCredentialsException("Cannot update other user information.");
     }
 
+    }
 }

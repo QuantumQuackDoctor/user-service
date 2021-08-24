@@ -1,6 +1,7 @@
 package com.ss.user.api;
 
-import com.database.ormlibrary.user.UserEntity;
+import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
+import com.database.ormlibrary.user.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ss.user.model.User;
 import com.ss.user.model.UserSettings;
@@ -9,6 +10,7 @@ import com.ss.user.repo.UserRepo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,10 +19,15 @@ import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.Month;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -30,6 +37,12 @@ class AuthApiIntegrationTest {
 
     @MockBean
     UserRepo userRepo;
+
+    @Captor
+    ArgumentCaptor<UserEntity> userCaptor;
+
+    @MockBean
+    AmazonSimpleEmailService emailService;
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -74,6 +87,80 @@ class AuthApiIntegrationTest {
         assertTrue(passwordEncoder.matches(testInsert.getPassword(), inserted.getPassword()));
     }
 
+    @Test
+    void adminRegister_WithInvalidEmail() throws Exception {
+
+        User testInsert = createSample();
+        testInsert.setEmail("email@notsmoothstack.com");
+
+        mockMvc.perform(put("/accounts/register?admin=true")
+                        .content(mapper.writeValueAsString(testInsert))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+
+    }
+
+    @Test
+    void activateIntegration_withValidToken() throws Exception {
+        UUID token = UUID.randomUUID();
+        UserEntity sampleUser = createSampleUserEntity();
+        sampleUser.setActivationToken(token);
+        sampleUser.setActivationTokenExpiration(Instant.now().plusMillis(1000));
+        when(userRepo.findByActivationToken(token)).thenReturn(Optional.of(sampleUser));
+        when(userRepo.save(userCaptor.capture())).thenReturn(sampleUser);
+
+        mockMvc.perform(post("/accounts/activate/" + token)).andExpect(status().isOk());
+
+        assertTrue(userCaptor.getValue().getActivated());
+    }
+
+    @Test
+    void activateIntegration_withExpiredToken() throws Exception {
+        UUID token = UUID.randomUUID();
+        UserEntity sampleUser = createSampleUserEntity();
+        sampleUser.setActivationToken(token);
+        sampleUser.setActivationTokenExpiration(Instant.now().minusMillis(1000));
+        when(userRepo.findByActivationToken(token)).thenReturn(Optional.of(sampleUser));
+        when(userRepo.save(userCaptor.capture())).thenReturn(sampleUser);
+
+        mockMvc.perform(post("/accounts/activate/" + token)).andExpect(status().isGone());
+
+        assertFalse(userCaptor.getValue().getActivated());
+    }
+
+    @Test
+    void activateIntegration_withInvalidToken() throws Exception {
+        UUID token = UUID.randomUUID();
+        UserEntity sampleUser = createSampleUserEntity();
+        sampleUser.setActivationToken(token);
+        sampleUser.setActivationTokenExpiration(Instant.now().minusMillis(1000));
+        when(userRepo.findByActivationToken(token)).thenReturn(Optional.empty());
+
+        mockMvc.perform(post("/accounts/activate/" + token)).andExpect(status().isNotFound());
+
+        verify(userRepo, times(0)).save(userCaptor.capture());
+    }
+
+    UserEntity createSampleUserEntity() {
+        UserEntity user = new UserEntity();
+        user.setId((long) 234453); //should be overwritten
+        user.setEmail("4443324@invalid.com");
+        user.setFirstName("firstName");
+        user.setLastName("lastName");
+        user.setPassword("password"); //should be hashed
+        user.setBirthDate(LocalDate.now()); //test local date parsing
+        user.setPoints(233434); //should be overwritten
+        user.setVeteran(false);
+        user.setUserRole(new UserRoleEntity().setRole("user"));
+        SettingsEntity settings = new SettingsEntity();
+        settings.setThemes(new ThemesEntity().setDark(true));
+        NotificationsEntity notificationsEntity = new NotificationsEntity();
+        notificationsEntity.setEmail(false);
+        notificationsEntity.setPhoneOption(false);
+        settings.setNotifications(notificationsEntity);
+        user.setSettings(settings);
+        return user;
+    }
 
     private User createSample() {
         User user = new User();

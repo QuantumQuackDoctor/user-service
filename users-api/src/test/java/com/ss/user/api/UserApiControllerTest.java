@@ -1,5 +1,6 @@
 package com.ss.user.api;
 
+import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.database.ormlibrary.user.NotificationsEntity;
 import com.database.ormlibrary.user.SettingsEntity;
 import com.database.ormlibrary.user.ThemesEntity;
@@ -41,6 +42,9 @@ class UserApiControllerTest {
     @MockBean
     UserRepo userRepo;
 
+    @MockBean
+    AmazonSimpleEmailService emailService;
+
     @Autowired
     MockMvc mockMvc;
 
@@ -49,7 +53,6 @@ class UserApiControllerTest {
         when(userRepo.findByEmail("email")).thenReturn(Optional.of(createSample()));
         when(userRepo.findById (234453L)).thenReturn(Optional.of (createSample()));
     }
-
 
     @Test
     @WithMockUser(username = "email", authorities = "user")

@@ -47,11 +47,11 @@ class AuthApiControllerTest {
 
 
         mockMvc.perform(put("/accounts/register")
-                .content(mapper.writeValueAsString(testInsert))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(mapper.writeValueAsString(testInsert))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        verify(userService, times(1)).insertUser(testInsert);
+        verify(userService, times(1)).insertUser(testInsert, false);
     }
 
     @Test
@@ -62,11 +62,11 @@ class AuthApiControllerTest {
         testInsert.setPassword(null); //invalidate input
 
         mockMvc.perform(put("/accounts/register")
-                .content(mapper.writeValueAsString(testInsert))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(mapper.writeValueAsString(testInsert))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
 
-        verify(userService, times(0)).insertUser(testInsert); //verify no user was inserted
+        verify(userService, times(0)).insertUser(testInsert, false); //verify no user was inserted
     }
 
     @Test
@@ -77,11 +77,26 @@ class AuthApiControllerTest {
 
 
         mockMvc.perform(put("/accounts/register")
-                .content(mapper.writeValueAsString(testInsert))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(mapper.writeValueAsString(testInsert))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isConflict());
 
-        verify(userService, times(0)).insertUser(testInsert); //verify no user was inserted
+        verify(userService, times(0)).insertUser(testInsert, false); //verify no user was inserted
+    }
+
+    @Test
+    void Register_AsAdminWithCorrectEmail_ShouldReturnOK() throws Exception {
+        when(userService.emailAvailable("email@smoothstack.com")).thenReturn(true);
+        //create sample user to insert
+        User testInsert = createSampleUser();
+        testInsert.setEmail("email@smoothstack.com");
+
+        mockMvc.perform(put("/accounts/register?admin=true")
+                        .content(mapper.writeValueAsString(testInsert))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        verify(userService, times(1)).insertUser(testInsert, true); //verify no user was inserted
     }
 
     @Test
@@ -90,20 +105,20 @@ class AuthApiControllerTest {
         when(authService.authenticate(testRequest)).thenReturn(createSampleAuthResponse());
 
         mockMvc.perform(post("/accounts/login")
-                .content(mapper.writeValueAsString(testRequest))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(mapper.writeValueAsString(testRequest))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("jwt").exists())
                 .andExpect(status().isOk());
     }
 
     @Test
-    void Login_WithInvalidCredentials_ShouldReturnBadRequest() throws  Exception {
+    void Login_WithInvalidCredentials_ShouldReturnBadRequest() throws Exception {
         AuthRequest testRequest = createSampleAuthRequest();
         when(authService.authenticate(testRequest)).thenThrow(new InvalidCredentialsException(""));
 
         mockMvc.perform(post("/accounts/login")
-                .content(mapper.writeValueAsString(testRequest))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(mapper.writeValueAsString(testRequest))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
 
