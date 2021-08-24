@@ -1,6 +1,7 @@
 package com.ss.user.api;
 
 import com.database.security.AuthDetails;
+import com.ss.user.errors.InvalidCredentialsException;
 import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.User;
 import com.ss.user.service.UserService;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Objects;
 
 @Controller
 @RequestMapping(value = "/accounts")
@@ -107,17 +109,14 @@ public class UserApiController {
             consumes = {"application/json", "application/xml"}
     )
 
-    /*@PreAuthorize("hasAuthority('user')")*/
-    @PreAuthorize("permitAll")
-    public ResponseEntity<User> patchUser(@ApiParam(value = "New user data, non null properties will be updated") @Valid @RequestBody(required = false) User user) throws UserNotFoundException {
-        return ResponseEntity.ok(userService.updateProfile(user));
+    @PreAuthorize("hasAuthority('user')")
+    public ResponseEntity<User> patchUser(@ApiParam(value = "New user data, non null properties will be updated") @Valid @RequestBody(required = false) User user,
+                                          Authentication authentication) throws UserNotFoundException, InvalidCredentialsException {
+        AuthDetails authDetails = (AuthDetails) authentication.getPrincipal();
+        if (Objects.equals(authDetails.getId(), user.getId())){
+            return ResponseEntity.ok(userService.updateProfile(user));
+        }
+        throw new InvalidCredentialsException("Cannot update other user information.");
     }
 
-
-
-/*    @GetMapping(path = "/allusers", produces = {"application/json"})
-    @PreAuthorize("permitAll")
-    public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok (userService.getAllUsers());
-    }*/
 }

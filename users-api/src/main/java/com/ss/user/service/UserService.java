@@ -82,6 +82,7 @@ public class UserService {
             entity.setPhone(updateEntity.getPhone());
             entity.setFirstName(updateEntity.getFirstName());
             entity.setLastName(updateEntity.getLastName());
+            userRepo.save(entity);
             return convertToDTO(entity);
         }else{
             throw new UserNotFoundException("User not found!");

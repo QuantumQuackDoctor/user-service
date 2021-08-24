@@ -1,12 +1,10 @@
 package com.ss.user.api;
 
-import com.database.security.AuthRepo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ss.user.errors.InvalidCredentialsException;
 import com.ss.user.model.*;
 import com.ss.user.service.AuthService;
 import com.ss.user.service.UserService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +12,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -133,7 +130,7 @@ class AuthApiControllerTest {
         user.setPassword("password");
         user.setDOB("2002-07-20");
         user.setPoints(233434);
-        user.setVeteranStatus(false);
+        user.setIsVeteran(false);
         UserSettings settings = new UserSettings();
         settings.setTheme(UserSettings.ThemeEnum.DARK);
         UserSettingsNotifications notifications = new UserSettingsNotifications();
