@@ -40,6 +40,7 @@ public class DriverService {
         DriverEntity driver = convertToEntity(toCreate);
         if (userRepo.existsByEmail(driver.getUser().getEmail())) throw new EmailTakenException("email taken");
         driver.getUser().setActivated(true); //admin is creating account, validation not necessary?
+        driver.setUser(userRepo.save(driver.getUser()));
         return convertToDTO(driverRepo.save(driver));
     }
 
