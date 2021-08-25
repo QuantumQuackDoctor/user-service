@@ -1,9 +1,7 @@
 package com.ss.user.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 import java.util.Objects;
@@ -13,7 +11,9 @@ import java.util.Objects;
  */
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class UserSettingsNotifications {
     @JsonProperty("email")
     @NotBlank

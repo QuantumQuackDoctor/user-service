@@ -7,6 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -20,6 +21,11 @@ public class ValidationAdvice {
                 Collectors.toMap(FieldError::getField,
                         fieldError -> Optional.ofNullable(fieldError.getDefaultMessage()).orElse(""))
         ));
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<Object> handleInvalidCredentialsException (InvalidCredentialsException e) {
+        return ResponseEntity.badRequest().body(e);
     }
 
     @ExceptionHandler(EmailTakenException.class)

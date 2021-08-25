@@ -1,6 +1,7 @@
 package com.ss.user.api;
 
 import com.database.security.AuthDetails;
+import com.ss.user.errors.InvalidCredentialsException;
 import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.User;
 import com.ss.user.service.UserService;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Objects;
 
 @Controller
 @RequestMapping(value = "/accounts")
@@ -47,7 +49,8 @@ public class UserApiController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<User> getUser(Authentication authentication) throws UserNotFoundException {
         UserDetails authDetails = (UserDetails) authentication.getPrincipal();
-        return ResponseEntity.ok(userService.getUser(authDetails.getUsername()));
+        User DTO = userService.getUser(authDetails.getUsername());
+        return ResponseEntity.ok(DTO);
     }
 
     @ExceptionHandler(UserNotFoundException.class)
@@ -74,7 +77,7 @@ public class UserApiController {
             @Authorization(value = "JWT")
     }, tags = {"user",})
 
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('user')")
     public ResponseEntity<Void> deleteUser(Authentication authentication) {
         AuthDetails authDetails = (AuthDetails) authentication.getPrincipal();
         userService.deleteUser(authDetails.getId());
@@ -106,9 +109,14 @@ public class UserApiController {
             consumes = {"application/json", "application/xml"}
     )
 
-    @PreAuthorize("hasRole('user')")
-    public ResponseEntity<Void> patchUser(@ApiParam(value = "New user data, non null properties will be updated") @Valid @RequestBody(required = false) User user) {
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
-
+    @PreAuthorize("hasAuthority('user')")
+    public ResponseEntity<User> patchUser(@ApiParam(value = "New user data, non null properties will be updated") @Valid @RequestBody(required = false) User user,
+                                          Authentication authentication) throws UserNotFoundException, InvalidCredentialsException {
+        AuthDetails authDetails = (AuthDetails) authentication.getPrincipal();
+        if (Objects.equals(authDetails.getId(), user.getId())){
+            return ResponseEntity.ok(userService.updateProfile(user));
+        }
+        throw new InvalidCredentialsException("Cannot update other user information.");
     }
+
 }
