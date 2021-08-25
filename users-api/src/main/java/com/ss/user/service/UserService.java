@@ -154,8 +154,15 @@ public class UserService {
         Optional<UserEntity> entityOptional = userRepo.findById(user.getId());
         if (entityOptional.isPresent()){
             UserEntity entity = entityOptional.get();
+            if (!user.getEmail().equals(entity.getEmail())){
+                entity.setActivated(false);
+                entity.setActivationToken(UUID.randomUUID());
+                entity.setActivationTokenExpiration(Instant.now().plusMillis(7200000));
+                sendActivationEmail(user.getEmail(), entity.getActivationToken(),
+                        entity.getUserRole().getRole().equals("admin")? adminPortalURL : userPortalURL);
+                entity.setEmail(user.getEmail());
+            }
             UserEntity updateEntity = convertToEntity(user);
-            entity.setEmail(updateEntity.getEmail());
             entity.setBirthDate(updateEntity.getBirthDate());
             entity.setPhone(updateEntity.getPhone());
             entity.setFirstName(updateEntity.getFirstName());
@@ -170,9 +177,6 @@ public class UserService {
     public UserEntity convertToEntity(User user) {
         UserEntity entity = mapper.map(user, UserEntity.class);
 
-        List<OrderEntity> orderEntities = new ArrayList<>();
-        orderRepo.findAllById(user.getOrders()).forEach(orderEntities :: add);
-        entity.setOrderList(orderEntities);
         //populate settings, modelMapper cannot get these
         UserSettings userSettings = user.getSettings();
         SettingsEntity settings = new SettingsEntity();

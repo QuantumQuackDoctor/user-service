@@ -43,10 +43,11 @@ public class User {
     @NotBlank
     private String DOB;
 
+    @JsonProperty("password")
     @ApiModelProperty(value = "To be used in account creation only, DELETE THIS WHEN SENDING!!!")
     @NotBlank(message = "password required")
     @Size(min = 5, max = 32, message = "password needs to be 5-32 characters")
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+
     private String password;
 
     @JsonProperty("phone")

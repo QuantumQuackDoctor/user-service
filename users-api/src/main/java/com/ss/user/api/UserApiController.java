@@ -119,5 +119,4 @@ public class UserApiController {
         throw new InvalidCredentialsException("Cannot update other user information.");
     }
 
-    }
 }

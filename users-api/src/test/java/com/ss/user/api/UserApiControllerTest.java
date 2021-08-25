@@ -28,6 +28,7 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -51,7 +52,7 @@ class UserApiControllerTest {
     @BeforeEach
     void setup() {
         when(userRepo.findByEmail("email")).thenReturn(Optional.of(createSample()));
-        when(userRepo.findById (234453L)).thenReturn(Optional.of (createSample()));
+        when(userRepo.findById(234453L)).thenReturn(Optional.of(createSample()));
     }
 
     @Test
@@ -76,35 +77,36 @@ class UserApiControllerTest {
     }
 
     @Test
-    @WithMockUser (username = "email", authorities = "user")
+    @WithUserDetails(value = "email", userDetailsServiceBeanName = "testUserDetailsService")
     void updateProfile_ShouldReturnOK() throws Exception {
         User sampleDTO = createSampleUserDTO();
+        when(userRepo.findById(any())).thenReturn(Optional.of(createSample()));
         sampleDTO.setFirstName("firstNameV2");
         ObjectMapper mapper = new ObjectMapper();
         ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
-        mockMvc.perform (patch("/accounts/user")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(ow.writeValueAsString(sampleDTO)))
+        mockMvc.perform(patch("/accounts/user")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ow.writeValueAsString(sampleDTO)))
                 .andExpect(status().isOk());
     }
 
     @Test
-    @WithMockUser (username = "email", authorities = "user")
+    @WithUserDetails(value = "email", userDetailsServiceBeanName = "testUserDetailsService")
     void updateProfile_ShouldReturnException() throws Exception {
         User sampleDTO = createSampleUserDTO();
-        sampleDTO.setId(123L);
+        sampleDTO.setId(1L);
         ObjectMapper mapper = new ObjectMapper();
         ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
-        mockMvc.perform (patch("/accounts/user")
+        mockMvc.perform(patch("/accounts/user")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(ow.writeValueAsString(sampleDTO)))
                 .andExpect(status().isNotFound());
     }
 
 
-    private User createSampleUserDTO (){
+    private User createSampleUserDTO() {
         User userDTO = new User();
-        userDTO.setId((long) 234453);
+        userDTO.setId((long) 1);
         userDTO.setEmail("email@invalid.com");
         userDTO.setFirstName("firstName");
         userDTO.setLastName("lastName");
@@ -115,9 +117,9 @@ class UserApiControllerTest {
         userDTO.setIsVeteran(false);
         userDTO.setSettings(UserSettings.builder().notifications(
                 UserSettingsNotifications.builder().email(true).text(true).build()).theme(
-                        UserSettings.ThemeEnum.DARK
+                UserSettings.ThemeEnum.DARK
         ).build());
-        userDTO.setOrders (Collections.emptyList());
+        userDTO.setOrders(Collections.emptyList());
         return userDTO;
     }
 

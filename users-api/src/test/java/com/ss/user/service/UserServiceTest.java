@@ -1,10 +1,5 @@
 package com.ss.user.service;
 
-import com.database.ormlibrary.user.NotificationsEntity;
-import com.database.ormlibrary.user.SettingsEntity;
-import com.database.ormlibrary.user.ThemesEntity;
-import com.database.ormlibrary.user.UserEntity;
-import com.ss.user.errors.UserNotFoundException;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.model.SendEmailRequest;
 import com.database.ormlibrary.user.*;
@@ -26,18 +21,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.time.LocalDate;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.*;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -102,16 +95,17 @@ class UserServiceTest {
         settings.setNotifications(notifications);
         testInsert.setSettings(settings);
         testInsert.setOrderList(Collections.emptyList());
+        testInsert.setUserRole(new UserRoleEntity().setRole("admin"));
         return testInsert;
     }
 
     @Test
-    void insertUser() {
+    void insertUser() throws InvalidAdminEmailException {
         when(userRepo.save(userCaptor.capture())).thenReturn(null);
         //create sample user to insert
         User testInsert = sampleUser();
         //insert sample
-        userService.insertUser(testInsert);
+        userService.insertUser(testInsert, false);
 
         //capture insertion from userRepo
         UserEntity insertedUser = userCaptor.getValue();
@@ -163,7 +157,7 @@ class UserServiceTest {
         when(userRepo.save(userCaptor.capture())).thenReturn(null);
 
         //create sample user to insert
-        User testInsert = createSampleUser();
+        User testInsert = sampleUser();
 
         testInsert.setEmail("email@smoothstack.com");
         //insert sample
@@ -193,11 +187,11 @@ class UserServiceTest {
     }
 
     @Test
-    void insertInvalidAdmin() throws InvalidCredentialsException {
+    void insertInvalidAdmin() {
         when(userRepo.save(userCaptor.capture())).thenReturn(null);
 
         //create sample user to insert
-        User testInsert = createSampleUser();
+        User testInsert = sampleUser();
 
         testInsert.setEmail("email@notsmoothstack.com");
         try {
@@ -207,12 +201,11 @@ class UserServiceTest {
         } catch (InvalidAdminEmailException ignored) {
         }
     }
-}
 
     @Test
     void activateUser_WithValidToken() throws UserNotFoundException, ConfirmationTokenExpiredException {
         UUID token = UUID.randomUUID();
-        UserEntity sampleUser = createSampleUserEntity();
+        UserEntity sampleUser = sampleUserEntity();
         sampleUser.setActivationToken(token);
         sampleUser.setActivationTokenExpiration(Instant.now().plusMillis(1000));
         when(userRepo.findByActivationToken(token)).thenReturn(Optional.of(sampleUser));
@@ -226,7 +219,7 @@ class UserServiceTest {
     @Test
     void activateUser_WithExpiredToken() throws UserNotFoundException {
         UUID token = UUID.randomUUID();
-        UserEntity sampleUser = createSampleUserEntity();
+        UserEntity sampleUser = sampleUserEntity();
         sampleUser.setActivationToken(token);
         sampleUser.setActivationTokenExpiration(Instant.now().minusMillis(1000));
         when(userRepo.findByActivationToken(token)).thenReturn(Optional.of(sampleUser));

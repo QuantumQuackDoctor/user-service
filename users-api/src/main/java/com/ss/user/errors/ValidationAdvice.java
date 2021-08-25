@@ -21,4 +21,9 @@ public class ValidationAdvice {
                         fieldError -> Optional.ofNullable(fieldError.getDefaultMessage()).orElse(""))
         ));
     }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<Object> handleInvalidCredentialsException (InvalidCredentialsException e){
+        return ResponseEntity.badRequest().body(e);
+    }
 }
