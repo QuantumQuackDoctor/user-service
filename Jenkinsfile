@@ -9,6 +9,14 @@ pipeline {
 	    Docker_tag = getDockerTag()
     }
     stages {
+    
+        stage('ECR Login') {
+            steps {
+                script {
+                    sh "aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 644684002839.dkr.ecr.us-east-2.amazonaws.com"
+                }
+            }
+        }
         stage('git') {
             steps {
                 git branch: 'dev', url: 'https://github.com/QuantumQuackDoctor/user-service.git'
@@ -41,23 +49,14 @@ pipeline {
                 sh "mvn clean package"
             }   
         }
-        stage('docker') {
+        stage('ECR Push') {
             steps{
                 script {
                     sh 'cp -r /var/lib/jenkins/workspace/user-service-job/users-api/target .'
                     sh 'docker build . -t quangmtran36/qqd-user-service:$Docker_tag'
-                    withCredentials([string(credentialsId: '6b6d3ec6-97dc-4c1c-bf02-67afd00371dc', variable: 'dockerHubPwd')]) {
-                        sh 'docker login -u quangmtran36 -p ${dockerHubPwd}'
-                        sh 'docker push quangmtran36/qqd-user-service:$Docker_tag'                 
-                    }
+                    sh 'docker tag user-service:latest 644684002839.dkr.ecr.us-east-2.amazonaws.com/user-service:latest'
+                    sh 'docker push 644684002839.dkr.ecr.us-east-2.amazonaws.com/user-service:latest'
                 }
-            }
-        }
-    
-        stage('aws') {
-            steps {
-                echo "aws"
-                //sh "mvn clean test"
             }
         }
     }

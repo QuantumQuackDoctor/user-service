@@ -176,21 +176,12 @@ public class UserService {
 
     public UserEntity convertToEntity(User user) {
         UserEntity entity = mapper.map(user, UserEntity.class);
-
         //populate settings, modelMapper cannot get these
-        UserSettings userSettings = user.getSettings();
-        SettingsEntity settings = new SettingsEntity();
-        settings.setNotifications(new NotificationsEntity()
-                .setEmail(userSettings.getNotifications().getEmail())
-                .setPhoneOption(userSettings.getNotifications().getText()));
-        settings.setThemes(new ThemesEntity().setDark(userSettings.getTheme().equals(UserSettings.ThemeEnum.DARK)));
-
-        entity.setBirthDate(LocalDate.from(formatter.parse(user.getDOB())));
-        entity.setSettings(settings);
+        DriverService.convertSettingsToEntity(entity, user.getSettings(), formatter, user.getDOB());
         return entity;
     }
 
-    private User convertToDTO(UserEntity entity) {
+    private User convertToDTO(UserEntity entity) {;
         User user = mapper.map(entity, User.class);
 
         user.setIsVeteran(entity.getVeteran());

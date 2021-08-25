@@ -1,5 +1,6 @@
 package com.ss.user.errors;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -23,7 +24,12 @@ public class ValidationAdvice {
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<Object> handleInvalidCredentialsException (InvalidCredentialsException e){
+    public ResponseEntity<Object> handleInvalidCredentialsException (InvalidCredentialsException e) {
         return ResponseEntity.badRequest().body(e);
+    }
+
+    @ExceptionHandler(EmailTakenException.class)
+    public ResponseEntity<String> handleEmailTaken(EmailTakenException e){
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
     }
 }
