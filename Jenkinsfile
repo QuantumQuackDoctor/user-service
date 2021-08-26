@@ -53,11 +53,11 @@ pipeline {
                     sh 'docker push 644684002839.dkr.ecr.us-east-2.amazonaws.com/user-service:latest'
                 }
             }
-        }
-    }
-    post {
-        success {
-            sh 'docker rmi $(docker images -a | grep aws | awk '{print $3}')'
+            post {
+                success {
+                    sh 'docker rmi $(docker images -a | grep aws | awk '{print $3}')'
+                }
+            }
         }
     }
 }
