@@ -22,10 +22,10 @@ pipeline {
                 git branch: 'dev', url: 'https://github.com/QuantumQuackDoctor/user-service.git'
             }
         }
-        stage('build') {
+        stage('package') {
             steps {
-                sh "mvn clean install"
-            }
+                sh "mvn clean package"
+            }   
         }
         stage('test') {
             steps {
@@ -44,11 +44,6 @@ pipeline {
                 waitForQualityGate abortPipeline= true
             }   
         }
-        stage('package') {
-            steps {
-                sh "mvn clean package"
-            }   
-        }
         stage('ECR Push') {
             steps{
                 script {
@@ -58,6 +53,11 @@ pipeline {
                     sh 'docker push 644684002839.dkr.ecr.us-east-2.amazonaws.com/user-service:latest'
                 }
             }
+        }
+    }
+    post {
+        success {
+            sh 'docker rmi $(docker images -a | grep aws | awk '{print $3}')'
         }
     }
 }
