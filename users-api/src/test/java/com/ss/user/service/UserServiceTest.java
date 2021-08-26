@@ -10,6 +10,7 @@ import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.User;
 import com.ss.user.model.UserSettings;
 import com.ss.user.model.UserSettingsNotifications;
+import com.ss.user.repo.OrderRepo;
 import com.ss.user.repo.UserRepo;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -23,19 +24,22 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 
 @SpringBootTest
 class UserServiceTest {
 
     @MockBean(UserRepo.class)
     UserRepo userRepo;
+    @MockBean(OrderRepo.class)
+    OrderRepo orderRepo;
     @MockBean
     AmazonSimpleEmailService emailSender;
     @Captor
@@ -49,13 +53,57 @@ class UserServiceTest {
     @Value("${email.sender}")
     String emailFrom;
 
+    User sampleUser() {
+        //create sample user to insert
+        User testInsert = new User();
+        testInsert.setId((long) 234453); //should be overwritten
+        testInsert.setEmail("4443324@invalid.com");
+        testInsert.setPhone("1234567890");
+        testInsert.setFirstName("firstName");
+        testInsert.setLastName("lastName");
+        testInsert.setPassword("password"); //should be hashed
+        testInsert.setDOB("2002-07-20"); //test local date parsing
+        testInsert.setPoints(233434); //should be overwritten
+        testInsert.setIsVeteran(false);
+        UserSettings settings = new UserSettings();
+        settings.setTheme(UserSettings.ThemeEnum.DARK);
+        UserSettingsNotifications notifications = new UserSettingsNotifications();
+        notifications.setEmail(false);
+        notifications.setText(false);
+        settings.setNotifications(notifications);
+        testInsert.setSettings(settings);
+        testInsert.setOrders(Collections.emptyList());
+        return testInsert;
+    }
+
+    UserEntity sampleUserEntity() {
+        UserEntity testInsert = new UserEntity();
+        testInsert.setId((long) 234453);
+        testInsert.setEmail("TestingEmail@invalid.com");
+        testInsert.setPhone("09786354321");
+        testInsert.setFirstName("SampleFirst");
+        testInsert.setLastName("SampleLast");
+        testInsert.setPassword("password");
+        testInsert.setBirthDate(LocalDate.parse("1860-08-21"));
+        testInsert.setPoints(233434);
+        testInsert.setVeteran(false);
+        SettingsEntity settings = new SettingsEntity();
+        settings.setThemes(new ThemesEntity().setDark(true));
+        NotificationsEntity notifications = new NotificationsEntity();
+        notifications.setEmail(true);
+        notifications.setPhoneOption(true);
+        settings.setNotifications(notifications);
+        testInsert.setSettings(settings);
+        testInsert.setOrderList(Collections.emptyList());
+        testInsert.setUserRole(new UserRoleEntity().setRole("admin"));
+        return testInsert;
+    }
+
     @Test
     void insertUser() throws InvalidAdminEmailException {
         when(userRepo.save(userCaptor.capture())).thenReturn(null);
-
         //create sample user to insert
-        User testInsert = createSampleUser();
-
+        User testInsert = sampleUser();
         //insert sample
         userService.insertUser(testInsert, false);
 
@@ -83,11 +131,33 @@ class UserServiceTest {
     }
 
     @Test
+    void updateUserProfile() throws UserNotFoundException {
+        when(userRepo.findById(anyLong())).thenReturn(Optional.of(sampleUserEntity()));
+
+        User updateSample = sampleUser();
+        User updateProfile = userService.updateProfile(updateSample);
+
+        assertEquals(233434, updateProfile.getPoints());
+        assertEquals("4443324@invalid.com", updateProfile.getEmail());
+        assertEquals("firstName", updateProfile.getFirstName());
+        assertEquals("lastName", updateProfile.getLastName());
+        LocalDate dob = LocalDate.parse(updateProfile.getDOB());
+        assertEquals(2002, dob.getYear());
+        assertEquals(Month.JULY, dob.getMonth());
+        assertEquals(20, dob.getDayOfMonth());
+    }
+
+    @Test
+    void updateUserNotFound() {
+        assertThrows(UserNotFoundException.class, () -> userService.updateProfile(new User()));
+    }
+
+    @Test
     void insertAdmin() throws InvalidAdminEmailException {
         when(userRepo.save(userCaptor.capture())).thenReturn(null);
 
         //create sample user to insert
-        User testInsert = createSampleUser();
+        User testInsert = sampleUser();
 
         testInsert.setEmail("email@smoothstack.com");
         //insert sample
@@ -117,11 +187,11 @@ class UserServiceTest {
     }
 
     @Test
-    void insertInvalidAdmin() throws InvalidCredentialsException {
+    void insertInvalidAdmin() {
         when(userRepo.save(userCaptor.capture())).thenReturn(null);
 
         //create sample user to insert
-        User testInsert = createSampleUser();
+        User testInsert = sampleUser();
 
         testInsert.setEmail("email@notsmoothstack.com");
         try {
@@ -132,51 +202,10 @@ class UserServiceTest {
         }
     }
 
-    User createSampleUser() {
-        User user = new User();
-        user.setId((long) 234453); //should be overwritten
-        user.setEmail("4443324@invalid.com");
-        user.setFirstName("firstName");
-        user.setLastName("lastName");
-        user.setPassword("password"); //should be hashed
-        user.setDOB("2002-07-20"); //test local date parsing
-        user.setPoints(233434); //should be overwritten
-        user.setVeteranStatus(false);
-        UserSettings settings = new UserSettings();
-        settings.setTheme(UserSettings.ThemeEnum.DARK);
-        UserSettingsNotifications notifications = new UserSettingsNotifications();
-        notifications.setEmail(false);
-        notifications.setText(false);
-        settings.setNotifications(notifications);
-        user.setSettings(settings);
-        return user;
-    }
-
-    UserEntity createSampleUserEntity() {
-        UserEntity user = new UserEntity();
-        user.setId((long) 234453); //should be overwritten
-        user.setEmail("4443324@invalid.com");
-        user.setFirstName("firstName");
-        user.setLastName("lastName");
-        user.setPassword("password"); //should be hashed
-        user.setBirthDate(LocalDate.now()); //test local date parsing
-        user.setPoints(233434); //should be overwritten
-        user.setVeteran(false);
-        user.setUserRole(new UserRoleEntity().setRole("user"));
-        SettingsEntity settings = new SettingsEntity();
-        settings.setThemes(new ThemesEntity().setDark(true));
-        NotificationsEntity notificationsEntity = new NotificationsEntity();
-        notificationsEntity.setEmail(false);
-        notificationsEntity.setPhoneOption(false);
-        settings.setNotifications(notificationsEntity);
-        user.setSettings(settings);
-        return user;
-    }
-
     @Test
     void activateUser_WithValidToken() throws UserNotFoundException, ConfirmationTokenExpiredException {
         UUID token = UUID.randomUUID();
-        UserEntity sampleUser = createSampleUserEntity();
+        UserEntity sampleUser = sampleUserEntity();
         sampleUser.setActivationToken(token);
         sampleUser.setActivationTokenExpiration(Instant.now().plusMillis(1000));
         when(userRepo.findByActivationToken(token)).thenReturn(Optional.of(sampleUser));
@@ -190,7 +219,7 @@ class UserServiceTest {
     @Test
     void activateUser_WithExpiredToken() throws UserNotFoundException {
         UUID token = UUID.randomUUID();
-        UserEntity sampleUser = createSampleUserEntity();
+        UserEntity sampleUser = sampleUserEntity();
         sampleUser.setActivationToken(token);
         sampleUser.setActivationTokenExpiration(Instant.now().minusMillis(1000));
         when(userRepo.findByActivationToken(token)).thenReturn(Optional.of(sampleUser));

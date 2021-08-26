@@ -145,7 +145,7 @@ class AuthApiControllerTest {
         user.setPassword("password");
         user.setDOB("2002-07-20");
         user.setPoints(233434);
-        user.setVeteranStatus(false);
+        user.setIsVeteran(false);
         UserSettings settings = new UserSettings();
         settings.setTheme(UserSettings.ThemeEnum.DARK);
         UserSettingsNotifications notifications = new UserSettingsNotifications();

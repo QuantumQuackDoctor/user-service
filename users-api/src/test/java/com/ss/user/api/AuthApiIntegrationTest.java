@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -82,7 +83,7 @@ class AuthApiIntegrationTest {
         assertEquals(20, inserted.getBirthDate().getDayOfMonth());
         assertEquals(Month.JULY, inserted.getBirthDate().getMonth());
         assertEquals(0, inserted.getPoints());
-        assertSame(testInsert.getVeteranStatus(), inserted.getVeteran());
+        assertSame(testInsert.getIsVeteran(), inserted.getVeteran());
         assertNull(inserted.getId());
         assertTrue(passwordEncoder.matches(testInsert.getPassword(), inserted.getPassword()));
     }
@@ -172,7 +173,7 @@ class AuthApiIntegrationTest {
         user.setPassword("password");
         user.setDOB("2002-07-20");
         user.setPoints(233434);
-        user.setVeteranStatus(false);
+        user.setIsVeteran(false);
         UserSettings settings = new UserSettings();
         settings.setTheme(UserSettings.ThemeEnum.DARK);
         UserSettingsNotifications notifications = new UserSettingsNotifications();

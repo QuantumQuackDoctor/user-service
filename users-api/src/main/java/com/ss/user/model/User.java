@@ -11,6 +11,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -46,20 +47,23 @@ public class User {
     @ApiModelProperty(value = "To be used in account creation only, DELETE THIS WHEN SENDING!!!")
     @NotBlank(message = "password required")
     @Size(min = 5, max = 32, message = "password needs to be 5-32 characters")
+
     private String password;
 
     @JsonProperty("phone")
     private String phone;
 
-    @JsonProperty("veteranStatus")
+    @JsonProperty("isVeteran")
     @NotNull
-    private Boolean veteranStatus;
+    private Boolean isVeteran;
 
     @JsonProperty("points")
     private Integer points;
 
     private UserSettings settings;
 
+    @JsonProperty ("orders")
+    private List<Long> orders;
 
     @Override
     public boolean equals(Object o) {
@@ -76,14 +80,14 @@ public class User {
                 Objects.equals(this.lastName, user.lastName) &&
                 Objects.equals(this.DOB, user.DOB) &&
                 Objects.equals(this.password, user.password) &&
-                Objects.equals(this.veteranStatus, user.veteranStatus) &&
+                Objects.equals(this.isVeteran, user.isVeteran) &&
                 Objects.equals(this.points, user.points) &&
                 Objects.equals(this.settings, user.settings);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, email, firstName, lastName, DOB, password, veteranStatus, points, settings);
+        return Objects.hash(id, email, firstName, lastName, DOB, password, isVeteran, points, settings);
     }
 
     @Override
@@ -96,7 +100,7 @@ public class User {
                 "    lastName: " + toIndentedString(lastName) + "\n" +
                 "    DOB: " + toIndentedString(DOB) + "\n" +
                 "    password: " + toIndentedString(password) + "\n" +
-                "    veteranStatus: " + toIndentedString(veteranStatus) + "\n" +
+                "    veteranStatus: " + toIndentedString(isVeteran) + "\n" +
                 "    points: " + toIndentedString(points) + "\n" +
                 "    settings: " + toIndentedString(settings) + "\n" +
                 "}";

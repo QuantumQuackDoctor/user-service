@@ -2,12 +2,14 @@ package com.ss.user.service;
 
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.model.*;
+import com.database.ormlibrary.order.OrderEntity;
 import com.database.ormlibrary.user.*;
 import com.ss.user.errors.ConfirmationTokenExpiredException;
 import com.ss.user.errors.InvalidAdminEmailException;
 import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.User;
 import com.ss.user.model.UserSettings;
+import com.ss.user.repo.OrderRepo;
 import com.ss.user.repo.UserRepo;
 import com.ss.user.repo.UserRoleRepo;
 import org.modelmapper.ModelMapper;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,6 +29,7 @@ public class UserService {
 
     private final UserRepo userRepo;
     private final UserRoleRepo userRoleRepo;
+    private final OrderRepo orderRepo;
     private final ModelMapper mapper;
     private final PasswordEncoder passwordEncoder;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -37,9 +41,10 @@ public class UserService {
     @Value("${email.sender}")
     private String emailFrom;
 
-    public UserService(UserRepo userRepo, UserRoleRepo userRoleRepo, ModelMapper mapper, PasswordEncoder passwordEncoder, AmazonSimpleEmailService emailService) {
+    public UserService(UserRepo userRepo, UserRoleRepo userRoleRepo, OrderRepo orderRepo, ModelMapper mapper, PasswordEncoder passwordEncoder, AmazonSimpleEmailService emailService) {
         this.userRepo = userRepo;
         this.userRoleRepo = userRoleRepo;
+        this.orderRepo = orderRepo;
         this.mapper = mapper;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
@@ -145,30 +150,55 @@ public class UserService {
         userRepo.deleteById(id);
     }
 
+    public User updateProfile (User user) throws UserNotFoundException {
+        Optional<UserEntity> entityOptional = userRepo.findById(user.getId());
+        if (entityOptional.isPresent()){
+            UserEntity entity = entityOptional.get();
+            if (!user.getEmail().equals(entity.getEmail())){
+                entity.setActivated(false);
+                entity.setActivationToken(UUID.randomUUID());
+                entity.setActivationTokenExpiration(Instant.now().plusMillis(7200000));
+                sendActivationEmail(user.getEmail(), entity.getActivationToken(),
+                        entity.getUserRole().getRole().equals("admin")? adminPortalURL : userPortalURL);
+                entity.setEmail(user.getEmail());
+            }
+            UserEntity updateEntity = convertToEntity(user);
+            entity.setBirthDate(updateEntity.getBirthDate());
+            entity.setPhone(updateEntity.getPhone());
+            entity.setFirstName(updateEntity.getFirstName());
+            entity.setLastName(updateEntity.getLastName());
+            userRepo.save(entity);
+            return convertToDTO(entity);
+        }else{
+            throw new UserNotFoundException("User not found!");
+        }
+    }
 
-    private UserEntity convertToEntity(User user) {
+    public UserEntity convertToEntity(User user) {
         UserEntity entity = mapper.map(user, UserEntity.class);
-
         //populate settings, modelMapper cannot get these
-        UserSettings userSettings = user.getSettings();
-        SettingsEntity settings = new SettingsEntity();
-        settings.setNotifications(new NotificationsEntity()
-                .setEmail(userSettings.getNotifications().getEmail())
-                .setPhoneOption(userSettings.getNotifications().getText()));
-        settings.setThemes(new ThemesEntity().setDark(userSettings.getTheme().equals(UserSettings.ThemeEnum.DARK)));
-
-        entity.setBirthDate(LocalDate.from(formatter.parse(user.getDOB())));
-        entity.setSettings(settings);
+        DriverService.convertSettingsToEntity(entity, user.getSettings(), formatter, user.getDOB());
         return entity;
     }
 
-    private User convertToDTO(UserEntity entity) {
+    private User convertToDTO(UserEntity entity) {;
         User user = mapper.map(entity, User.class);
+
+        user.setIsVeteran(entity.getVeteran());
         user.setDOB(entity.getBirthDate().format((formatter)));
         user.getSettings().getNotifications().setEmail(entity.getSettings().getNotifications().getEmail());
         user.getSettings().getNotifications().setText(entity.getSettings().getNotifications().getPhoneOption());
         user.getSettings().setTheme(entity.getSettings().getThemes().getDark() ? UserSettings.ThemeEnum.DARK : UserSettings.ThemeEnum.LIGHT);
 
+        List<Long> orderIDs = new ArrayList<>();
+        if (entity.getOrderList() != null) {
+            entity.getOrderList().forEach(orderEntity -> orderIDs.add(orderEntity.getId()));
+            user.setOrders(orderIDs);
+        }else{
+            user.setOrders(Collections.emptyList());
+        }
+
+        //delete password
         user.setPassword(null);
         return user;
     }
