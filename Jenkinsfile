@@ -6,11 +6,6 @@ pipeline {
                 git branch: 'dev', url: 'https://github.com/QuantumQuackDoctor/user-service.git'
             }
         }
-        stage('package') {
-            steps {
-                sh "mvn clean package"
-            }   
-        }
         stage('test') {
             steps {
                 sh "mvn clean test"
@@ -26,6 +21,11 @@ pipeline {
         stage('Quality Gate') {
             steps {
                 waitForQualityGate abortPipeline= true
+            }   
+        }
+        stage('package') {
+            steps {
+                sh "mvn clean package"
             }   
         }
         stage('ECR Push') {
