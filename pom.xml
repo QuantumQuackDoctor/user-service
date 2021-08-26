@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <build>
-    <plugins>
+    <!-- <plugins>
     <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
@@ -26,7 +26,7 @@
             </execution>
         </executions>
     </plugin>
-    </plugins>
+    </plugins> -->
     </build>
 
     <groupId>com.smoothstack</groupId>
