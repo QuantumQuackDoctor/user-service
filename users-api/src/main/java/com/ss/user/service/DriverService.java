@@ -4,6 +4,7 @@ import com.database.ormlibrary.driver.DriverEntity;
 import com.database.ormlibrary.driver.DriverRatingEntity;
 import com.database.ormlibrary.user.*;
 import com.ss.user.errors.EmailTakenException;
+import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.Driver;
 import com.ss.user.model.DriverRating;
 import com.ss.user.model.UserSettings;
@@ -11,6 +12,7 @@ import com.ss.user.repo.DriverRepo;
 import com.ss.user.repo.UserRepo;
 import com.ss.user.repo.UserRoleRepo;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -24,23 +26,29 @@ public class DriverService {
 
     private final UserRepo userRepo;
     private final UserRoleRepo userRoleRepo;
+    private final PasswordEncoder passwordEncoder;
     private final ModelMapper mapper;
     private final DriverRepo driverRepo;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    public DriverService(UserRepo userRepo, UserRoleRepo userRoleRepo, ModelMapper mapper, DriverRepo driverRepo) {
+    public DriverService(UserRepo userRepo, UserRoleRepo userRoleRepo, PasswordEncoder passwordEncoder, ModelMapper mapper, DriverRepo driverRepo) {
         this.userRepo = userRepo;
         this.userRoleRepo = userRoleRepo;
+        this.passwordEncoder = passwordEncoder;
         this.mapper = mapper;
         this.driverRepo = driverRepo;
     }
 
+    public Driver getDriverById(Long id) throws UserNotFoundException {
+        return convertToDTO(driverRepo.findById(id).orElseThrow(() -> new UserNotFoundException("driver not found")));
+    }
 
     public Driver createDriver(Driver toCreate) throws EmailTakenException {
         DriverEntity driver = convertToEntity(toCreate);
         if (userRepo.existsByEmail(driver.getUser().getEmail())) throw new EmailTakenException("email taken");
         driver.getUser().setActivated(true); //admin is creating account, validation not necessary?
         driver.setUser(userRepo.save(driver.getUser()));
+        driver.getUser().setPassword(passwordEncoder.encode(toCreate.getPassword()));
         return convertToDTO(driverRepo.save(driver));
     }
 
@@ -84,6 +92,8 @@ public class DriverService {
             driver.setRatings(entity.getRatings().stream().map(this::convertRatingToDTO).collect(Collectors.toList()));
         else
             driver.setRatings(new ArrayList<>());
+
+        driver.setPassword(null);
 
         driver.setId(entity.getId());
 

@@ -21,6 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -64,6 +65,30 @@ class DriverApiControllerTest {
         assertEquals(driverEntity.getUser().getSettings().getNotifications().getEmail(), driverDTO.getSettings().getNotifications().getEmail());
         assertEquals(driverEntity.getUser().getSettings().getNotifications().getPhoneOption(), driverDTO.getSettings().getNotifications().getText());
         assertFalse(driverEntity.getUser().getSettings().getThemes().getDark());
+    }
+
+    @Test
+    @WithMockUser(username = "username", authorities = "admin")
+    void readDriver_ShouldReturnDriver() throws Exception {
+        Driver driverDTO = createSampleDriverDTO();
+        driverDTO.setEmail("readDriverShouldReturnDriver@example.com");
+        //insert driver
+        MvcResult result = mockMvc.perform(put("/accounts/driver")
+                        .content(mapper.writeValueAsString(driverDTO))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+        long id = ((Number)JsonPath.read(result.getResponse().getContentAsString(), "id")).longValue();
+
+        mockMvc.perform(get("/accounts/driver/" + id))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "username", authorities = "admin")
+    void readDriver_WithInvalidId_ShouldReturnNotFound() throws Exception {
+        mockMvc.perform(get("/accounts/driver/" + 203982))
+                .andExpect(status().isNotFound());
     }
 
 
