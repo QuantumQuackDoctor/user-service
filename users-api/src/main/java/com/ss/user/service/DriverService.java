@@ -52,6 +52,24 @@ public class DriverService {
         return convertToDTO(driverRepo.save(driver));
     }
 
+    public Driver updateDriver(Driver driver, boolean updatePassword) throws UserNotFoundException {
+        DriverEntity driverEntity = driverRepo.findById(driver.getId())
+                .orElseThrow(() -> new UserNotFoundException("driver not present"));
+
+        DriverEntity newDriverDetails = convertToEntity(driver);
+        newDriverDetails.setId(driverEntity.getId());
+        newDriverDetails.getUser().setId(driverEntity.getUser().getId());
+        if (updatePassword) {
+            newDriverDetails.getUser().setPassword(passwordEncoder.encode(driver.getPassword()));
+        } else {
+            newDriverDetails.getUser().setPassword(driverEntity.getUser().getPassword());
+        }
+
+        mapper.map(newDriverDetails, driverEntity);
+
+        return convertToDTO(driverRepo.save(driverEntity));
+    }
+
 
     private UserRoleEntity getDriverRole() {
         Optional<UserRoleEntity> role = userRoleRepo.findByRole("driver");
@@ -63,7 +81,7 @@ public class DriverService {
         }
     }
 
-    private DriverEntity convertToEntity(Driver driver) {
+    public DriverEntity convertToEntity(Driver driver) {
         UserEntity userEntity = mapper.map(driver, UserEntity.class);
         userEntity.setVeteran(false);
         userEntity.setPoints(0);
@@ -80,11 +98,12 @@ public class DriverService {
         return driverEntity;
     }
 
-    private Driver convertToDTO(DriverEntity entity) {
+    public Driver convertToDTO(DriverEntity entity) {
         Driver driver = mapper.map(entity.getUser(), Driver.class);
         driver.setDOB(entity.getUser().getBirthDate().format((formatter)));
         driver.getSettings().getNotifications().setEmail(entity.getUser().getSettings().getNotifications().getEmail());
         driver.getSettings().getNotifications().setText(entity.getUser().getSettings().getNotifications().getPhoneOption());
+        driver.getSettings().setTheme(entity.getUser().getSettings().getThemes().getDark() ? UserSettings.ThemeEnum.DARK : UserSettings.ThemeEnum.LIGHT);
         driver.setPassword(null);
 
         driver.setCar(entity.getCar());
