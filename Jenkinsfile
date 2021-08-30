@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    environment {
+        AWS_REGION='us-east-2'
+    }
     stages {
         stage('git') {
             steps {
@@ -31,11 +34,13 @@ pipeline {
         stage('ECR Push') {
             steps{
                 script {
-                    //sh 'cp -r /var/lib/jenkins/workspace/user-service-job/users-api/target .'
-                    sh "aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 644684002839.dkr.ecr.us-east-2.amazonaws.com"
-                    sh 'docker build -t user-service .'
-                    sh 'docker tag user-service:latest 644684002839.dkr.ecr.us-east-2.amazonaws.com/user-service:latest'
-                    sh 'docker push 644684002839.dkr.ecr.us-east-2.amazonaws.com/user-service:latest'
+                    withCredentials([string(credentialsId: '143004d8-0a84-4e71-836d-24e128adc8bb', variable: 'AWS_ID')]) {
+                        
+                    }
+                    sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin '$AWS_ID'.dkr.ecr.${AWS_REGION}.amazonaws.com"
+                    sh "docker build -t user-service ."
+                    sh "docker tag user-service:latest '$AWS_ID'.dkr.ecr.${AWS_REGION}.amazonaws.com/user-service:latest"
+                    sh "docker push '$AWS_ID'.dkr.ecr.${AWS_REGION}.amazonaws.com/user-service:latest"
                 }
             }
         }
