@@ -63,6 +63,7 @@ public class DriverApiController {
     public ResponseEntity<Driver> getDriver(
             @RequestBody @Valid Driver driver,
             @RequestParam(value = "update-password", defaultValue = "false") boolean updatePassword) throws UserNotFoundException {
+        if(driver.getId() == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(driverService.updateDriver(driver, updatePassword));
     }
 }
