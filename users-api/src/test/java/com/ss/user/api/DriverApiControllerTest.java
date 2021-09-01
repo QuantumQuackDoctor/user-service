@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -21,8 +22,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -33,6 +33,8 @@ class DriverApiControllerTest {
     DriverRepo driverRepo;
     @Autowired
     MockMvc mockMvc;
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     ObjectMapper mapper = new ObjectMapper();
 
@@ -91,6 +93,91 @@ class DriverApiControllerTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    @WithMockUser(username = "username", authorities = "admin")
+    void updateDriver_WithoutPassword_ShouldUpdateDriver() throws Exception {
+        Driver driverDTO = createSampleDriverDTO();
+        driverDTO.setEmail("updateDriverNoPassword@example.com");
+        //insert driver
+        MvcResult result = mockMvc.perform(put("/accounts/driver")
+                        .content(mapper.writeValueAsString(driverDTO))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+        long id = ((Number)JsonPath.read(result.getResponse().getContentAsString(), "id")).longValue();
+
+        driverDTO.setId(id);
+        driverDTO.setCar("new Car");
+        driverDTO.setFirstName("newFirstName");
+        driverDTO.setLastName("newLastName");
+        driverDTO.setPassword("newPassword");
+
+        mockMvc.perform(post("/accounts/driver?update-password=false").content(mapper.writeValueAsString(driverDTO)).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        Optional<DriverEntity> updatedDriverOptional = driverRepo.findById(id);
+
+        assertTrue(updatedDriverOptional.isPresent());
+        DriverEntity updatedDriver = updatedDriverOptional.get();
+
+        assertEquals(driverDTO.getCar(), updatedDriver.getCar());
+        assertEquals(driverDTO.getFirstName(), updatedDriver.getUser().getFirstName());
+        assertEquals(driverDTO.getLastName(), updatedDriver.getUser().getLastName());
+        assertFalse(passwordEncoder.matches("newPassword", updatedDriver.getUser().getPassword()));
+    }
+
+    @Test
+    @WithMockUser(username = "username", authorities = "admin")
+    void updateDriver_WithPassword_ShouldUpdateDriver() throws Exception {
+        Driver driverDTO = createSampleDriverDTO();
+        driverDTO.setEmail("updateDriverWithPassword@example.com");
+        //insert driver
+        MvcResult result = mockMvc.perform(put("/accounts/driver")
+                        .content(mapper.writeValueAsString(driverDTO))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+        long id = ((Number)JsonPath.read(result.getResponse().getContentAsString(), "id")).longValue();
+
+        driverDTO.setId(id);
+        driverDTO.setCar("new Car");
+        driverDTO.setFirstName("newFirstName");
+        driverDTO.setLastName("newLastName");
+        driverDTO.setPassword("newPassword");
+
+        mockMvc.perform(post("/accounts/driver?update-password=true").content(mapper.writeValueAsString(driverDTO)).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        Optional<DriverEntity> updatedDriverOptional = driverRepo.findById(id);
+
+        assertTrue(updatedDriverOptional.isPresent());
+        DriverEntity updatedDriver = updatedDriverOptional.get();
+
+        assertEquals(driverDTO.getCar(), updatedDriver.getCar());
+        assertEquals(driverDTO.getFirstName(), updatedDriver.getUser().getFirstName());
+        assertEquals(driverDTO.getLastName(), updatedDriver.getUser().getLastName());
+        assertTrue(passwordEncoder.matches("newPassword", updatedDriver.getUser().getPassword()));
+    }
+
+    @Test
+    @WithMockUser(username = "username", authorities = "admin")
+    void updateDriver_WithInvalidId_ShouldReturnNotFound() throws Exception{
+        Driver driverDTO = createSampleDriverDTO();
+        driverDTO.setId(279037493727L);
+
+        mockMvc.perform(post("/accounts/driver?update-password=true").content(mapper.writeValueAsString(driverDTO)).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "username", authorities = "admin")
+    void updateDriver_WithNullId_ShouldReturnNotFound() throws Exception{
+        Driver driverDTO = createSampleDriverDTO();
+        driverDTO.setId(null);
+
+        mockMvc.perform(post("/accounts/driver?update-password=true").content(mapper.writeValueAsString(driverDTO)).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
 
     private Driver createSampleDriverDTO() {
         Driver driver = new Driver();
