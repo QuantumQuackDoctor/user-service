@@ -70,6 +70,10 @@ public class DriverService {
         return convertToDTO(driverRepo.save(driverEntity));
     }
 
+    public void deleteDriver(Long id){
+        driverRepo.deleteById(id);
+    }
+
 
     private UserRoleEntity getDriverRole() {
         Optional<UserRoleEntity> role = userRoleRepo.findByRole("driver");

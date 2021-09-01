@@ -84,6 +84,8 @@ class DriverApiControllerTest {
 
         mockMvc.perform(get("/accounts/driver/" + id))
                 .andExpect(status().isOk());
+
+        driverRepo.deleteById(id);
     }
 
     @Test
@@ -124,6 +126,8 @@ class DriverApiControllerTest {
         assertEquals(driverDTO.getFirstName(), updatedDriver.getUser().getFirstName());
         assertEquals(driverDTO.getLastName(), updatedDriver.getUser().getLastName());
         assertFalse(passwordEncoder.matches("newPassword", updatedDriver.getUser().getPassword()));
+
+        driverRepo.deleteById(id);
     }
 
     @Test
@@ -157,6 +161,8 @@ class DriverApiControllerTest {
         assertEquals(driverDTO.getFirstName(), updatedDriver.getUser().getFirstName());
         assertEquals(driverDTO.getLastName(), updatedDriver.getUser().getLastName());
         assertTrue(passwordEncoder.matches("newPassword", updatedDriver.getUser().getPassword()));
+
+        driverRepo.deleteById(id);
     }
 
     @Test
@@ -177,6 +183,27 @@ class DriverApiControllerTest {
 
         mockMvc.perform(post("/accounts/driver?update-password=true").content(mapper.writeValueAsString(driverDTO)).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "username", authorities = "admin")
+    void deleteDriver_ShouldDeleteDriver() throws Exception {
+        Driver driverDTO = createSampleDriverDTO();
+        driverDTO.setEmail("deleteDriver@example.com");
+        //insert driver
+        MvcResult result = mockMvc.perform(put("/accounts/driver")
+                        .content(mapper.writeValueAsString(driverDTO))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+        long id = ((Number)JsonPath.read(result.getResponse().getContentAsString(), "id")).longValue();
+
+
+        mockMvc.perform(delete("/accounts/driver/" + id)).andExpect(status().isOk());
+
+        Optional<DriverEntity> updatedDriverOptional = driverRepo.findById(id);
+
+        assertFalse(updatedDriverOptional.isPresent());
     }
 
     private Driver createSampleDriverDTO() {
