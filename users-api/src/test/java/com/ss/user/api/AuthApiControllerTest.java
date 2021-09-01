@@ -15,6 +15,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -44,6 +47,7 @@ class AuthApiControllerTest {
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         //create sample user to insert
         User testInsert = createSampleUser();
+
 
 
         mockMvc.perform(put("/accounts/register")
@@ -153,6 +157,8 @@ class AuthApiControllerTest {
         notifications.setText(false);
         settings.setNotifications(notifications);
         user.setSettings(settings);
+        List<Long> orderList = new ArrayList<>();
+        user.setOrders(orderList);
         return user;
     }
 }
