@@ -3,6 +3,7 @@ pipeline {
     environment {
         AWS_REGION='us-east-2'
     }
+    stages {
         stage('test') {
             steps {
                 sh "mvn clean test"
