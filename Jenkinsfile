@@ -40,7 +40,7 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                sh 'cd /cloud-repository'
+                sh 'cd /cloud-repository/Docker/'
                 sh 'docker context use qqd'
                 sh 'docker compose up'
             }
