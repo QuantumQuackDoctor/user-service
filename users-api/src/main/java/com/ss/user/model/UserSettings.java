@@ -3,14 +3,10 @@ package com.ss.user.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
 /**
@@ -23,10 +19,10 @@ import java.util.Objects;
 @AllArgsConstructor
 public class UserSettings {
     @JsonProperty("notifications")
-    @NotBlank
+    @NotNull
     private UserSettingsNotifications notifications;
     @JsonProperty("theme")
-    @NotBlank
+    @NotNull
     private ThemeEnum theme;
 
     @Override

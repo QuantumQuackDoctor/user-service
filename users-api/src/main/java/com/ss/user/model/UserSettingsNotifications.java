@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
 /**
@@ -16,11 +17,11 @@ import java.util.Objects;
 @AllArgsConstructor
 public class UserSettingsNotifications {
     @JsonProperty("email")
-    @NotBlank
+    @NotNull
     private Boolean email;
 
     @JsonProperty("text")
-    @NotBlank
+    @NotNull
     private Boolean text;
 
 

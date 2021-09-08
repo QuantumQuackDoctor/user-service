@@ -1,9 +1,11 @@
 package com.ss.user.api;
 
+import com.database.ormlibrary.user.SettingsEntity;
 import com.database.security.AuthDetails;
 import com.ss.user.errors.InvalidCredentialsException;
 import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.User;
+import com.ss.user.model.UserSettings;
 import com.ss.user.service.UserService;
 import io.swagger.annotations.*;
 import org.springframework.http.HttpStatus;
@@ -119,4 +121,10 @@ public class UserApiController {
         throw new InvalidCredentialsException("Cannot update other user information.");
     }
 
+    @PatchMapping(path = "/notifications")
+    @PreAuthorize("hasAuthority ('user')")
+    public ResponseEntity<UserSettings> updateNotifications (@Valid @RequestBody UserSettings userSettings, Authentication authentication) throws UserNotFoundException {
+        AuthDetails authDetails = (AuthDetails) authentication.getPrincipal();
+        return ResponseEntity.ok().body(userService.updateNotifications (authDetails.getId(), userSettings));
+    }
 }

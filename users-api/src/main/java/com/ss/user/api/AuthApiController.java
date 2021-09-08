@@ -53,7 +53,7 @@ public class AuthApiController {
             @ApiResponse(code = 400, message = "Missing field"),
             @ApiResponse(code = 409, message = "username or email invalid")})
     @ApiOperation(value = "Register", nickname = "putRegister", notes = "TODO Register new user, email validation will be sent", tags = {"auth",})
-    public ResponseEntity<String> putRegister(@RequestParam(defaultValue = "false") boolean admin, @RequestBody(required = true) @Valid @ApiParam("User to register") User user) throws InvalidAdminEmailException {
+    public ResponseEntity<String> putRegister(@RequestParam(defaultValue = "false") boolean admin, @RequestBody @Valid @ApiParam("User to register") User user) throws InvalidAdminEmailException {
         //check if phone or email exist
         if (userService.emailAvailable(user.getEmail())) {
             //insert user
@@ -90,7 +90,7 @@ public class AuthApiController {
             @ApiResponse(code = 400, message = "Invalid user"),
             @ApiResponse(code = 401, message = "Account not activated", response = String.class)})
     @ApiOperation(value = "Login", nickname = "postLogin", notes = "Log in, resend verification email if not activated", response = AuthResponse.class, tags = {"auth",})
-    public ResponseEntity<AuthResponse> postLogin(@RequestBody(required = true) @Valid @ApiParam("Authentication request") AuthRequest authRequest) throws InvalidCredentialsException {
+    public ResponseEntity<AuthResponse> postLogin(@RequestBody @Valid @ApiParam("Authentication request") AuthRequest authRequest) throws InvalidCredentialsException {
         return ResponseEntity.ok(authService.authenticate(authRequest));
     }
 
@@ -156,7 +156,7 @@ public class AuthApiController {
             value = "/register",
             consumes = {"application/json"}
     )
-    public ResponseEntity<Void> updatePassword(@ApiParam(value = "") @Valid @RequestBody(required = false) PasswordResetRequest passwordResetRequest) {
+    public ResponseEntity<Void> updatePassword(@Valid @RequestBody(required = false) PasswordResetRequest passwordResetRequest) {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
 
@@ -176,4 +176,7 @@ public class AuthApiController {
     public ResponseEntity<Void> testAuth() {
         return ResponseEntity.ok(null);
     }
+
+
+
 }

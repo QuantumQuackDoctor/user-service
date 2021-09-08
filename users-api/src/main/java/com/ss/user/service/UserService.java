@@ -2,8 +2,10 @@ package com.ss.user.service;
 
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.model.*;
-import com.database.ormlibrary.order.OrderEntity;
-import com.database.ormlibrary.user.*;
+import com.database.ormlibrary.user.SettingsEntity;
+import com.database.ormlibrary.user.ThemesEntity;
+import com.database.ormlibrary.user.UserEntity;
+import com.database.ormlibrary.user.UserRoleEntity;
 import com.ss.user.errors.ConfirmationTokenExpiredException;
 import com.ss.user.errors.InvalidAdminEmailException;
 import com.ss.user.errors.UserNotFoundException;
@@ -18,11 +20,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class UserService {
@@ -116,6 +115,42 @@ public class UserService {
         emailService.sendEmail(request);
     }
 
+    public UserSettings updateNotifications(Long userId, UserSettings userSettings) throws UserNotFoundException {
+
+        Optional<UserEntity> userEntityOptional = userRepo.findById(userId);
+        if (userEntityOptional.isPresent()) {
+            UserEntity entity = userEntityOptional.get();
+
+            if (!entity.getSettings().getNotifications().getEmail() && userSettings.getNotifications().getEmail()){
+                entity.setSettings(convertToSettingEntity(userSettings));
+                userRepo.save(entity);
+                sendEmailNotificationUpdate(true, entity.getEmail());
+            }else if (entity.getSettings().getNotifications().getEmail() && !userSettings.getNotifications().getEmail()){
+                entity.setSettings(convertToSettingEntity(userSettings));
+                userRepo.save(entity);
+                sendEmailNotificationUpdate(false, entity.getEmail());
+            }
+            else{
+                entity.setSettings(convertToSettingEntity(userSettings));
+                userRepo.save(entity);
+            }
+            return userSettings;
+        }
+        throw new UserNotFoundException("User Not Found!");
+    }
+
+    public void sendEmailNotificationUpdate (boolean active, String userEmail){
+        String htmlBody = active? "<p> You have chosen to activate email notifications from Scrumptious!\n" :
+                "<p> You have unsubscribed from Scrumptious email notifications, we are sad to see you go :(";
+        SendEmailRequest request = new SendEmailRequest()
+                .withDestination(new Destination().withToAddresses(userEmail))
+                .withMessage(new Message()
+                        .withBody(new Body()
+                                .withHtml(new Content().withCharset("UTF-8").withData(htmlBody))).withSubject(new Content()
+                                .withCharset("UTF-8").withData("Scrumptious Email Notification Update"))).withSource(emailFrom);
+        emailService.sendEmail(request);
+    }
+
     public void activateAccount(UUID uuid) throws ConfirmationTokenExpiredException, UserNotFoundException {
         Optional<UserEntity> userEntityOptional = userRepo.findByActivationToken(uuid);
         if (userEntityOptional.isPresent()) {
@@ -150,16 +185,16 @@ public class UserService {
         userRepo.deleteById(id);
     }
 
-    public User updateProfile (User user) throws UserNotFoundException {
+    public User updateProfile(User user) throws UserNotFoundException {
         Optional<UserEntity> entityOptional = userRepo.findById(user.getId());
-        if (entityOptional.isPresent()){
+        if (entityOptional.isPresent()) {
             UserEntity entity = entityOptional.get();
-            if (!user.getEmail().equals(entity.getEmail())){
+            if (!user.getEmail().equals(entity.getEmail())) {
                 entity.setActivated(false);
                 entity.setActivationToken(UUID.randomUUID());
                 entity.setActivationTokenExpiration(Instant.now().plusMillis(7200000));
                 sendActivationEmail(user.getEmail(), entity.getActivationToken(),
-                        entity.getUserRole().getRole().equals("admin")? adminPortalURL : userPortalURL);
+                        entity.getUserRole().getRole().equals("admin") ? adminPortalURL : userPortalURL);
                 entity.setEmail(user.getEmail());
             }
             UserEntity updateEntity = convertToEntity(user);
@@ -169,7 +204,7 @@ public class UserService {
             entity.setLastName(updateEntity.getLastName());
             userRepo.save(entity);
             return convertToDTO(entity);
-        }else{
+        } else {
             throw new UserNotFoundException("User not found!");
         }
     }
@@ -181,7 +216,7 @@ public class UserService {
         return entity;
     }
 
-    private User convertToDTO(UserEntity entity) {;
+    private User convertToDTO(UserEntity entity) {
         User user = mapper.map(entity, User.class);
 
         user.setIsVeteran(entity.getVeteran());
@@ -194,12 +229,19 @@ public class UserService {
         if (entity.getOrderList() != null) {
             entity.getOrderList().forEach(orderEntity -> orderIDs.add(orderEntity.getId()));
             user.setOrders(orderIDs);
-        }else{
+        } else {
             user.setOrders(Collections.emptyList());
         }
 
         //delete password
         user.setPassword(null);
         return user;
+    }
+
+    private SettingsEntity convertToSettingEntity (UserSettings userSettings) {
+        SettingsEntity entity = mapper.map (userSettings, SettingsEntity.class);
+        entity.setThemes(new ThemesEntity().setDark(userSettings.getTheme().equals(UserSettings.ThemeEnum.DARK)));
+        entity.setNotifications(entity.getNotifications().setPhoneOption(userSettings.getNotifications().getText()));
+        return entity;
     }
 }
