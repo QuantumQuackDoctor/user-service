@@ -38,6 +38,12 @@ pipeline {
                 }
             }
         }
+        stage('Deploy') {
+            steps {
+                sh 'docker context use qqd'
+                sh 'docker compose up'
+            }
+        }
     }
     post {
         success {
