@@ -12,12 +12,19 @@ pipeline {
                 sh "mvn clean test"
             }
         }
-    }
-    post {
-        success {
-            script {
-                sh 'docker image prune -f -a'
-            }
+        stage('SonarQube analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh "mvn sonar:sonar"    
+                }    
+            }    
         }
     }
+    // post {
+    //     success {
+    //         script {
+    //             sh 'docker image prune -f -a'
+    //         }
+    //     }
+    // }
 }
