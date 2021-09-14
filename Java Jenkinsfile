@@ -17,8 +17,12 @@ pipeline {
                 withSonarQubeEnv('SonarQube') {
                     sh "mvn sonar:sonar"    
                 }    
-                waitForQualityGate abortPipeline= true
             }    
+        }
+        stage('Quality Gate') {
+            steps {
+                waitForQualityGate abortPipeline= true
+            }   
         }
     }
     // post {
