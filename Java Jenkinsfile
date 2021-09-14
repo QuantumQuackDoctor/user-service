@@ -1,0 +1,23 @@
+pipeline {
+    agent any
+    tools{
+        maven "Maven"
+    }
+    environment {
+        AWS_REGION='us-east-2'
+    }
+    stages {
+        stage('test') {
+            steps {
+                sh "mvn clean test"
+            }
+        }
+    }
+    post {
+        success {
+            script {
+                sh 'docker image prune -f -a'
+            }
+        }
+    }
+}
