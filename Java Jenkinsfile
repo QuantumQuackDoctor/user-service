@@ -24,12 +24,10 @@ pipeline {
                 waitForQualityGate abortPipeline= true
             }   
         }
+        stage('Build') {
+            steps {
+                sh "mvn clean package"
+            }
+        }
     }
-    // post {
-    //     success {
-    //         script {
-    //             sh 'docker image prune -f -a'
-    //         }
-    //     }
-    // }
 }
