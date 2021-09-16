@@ -4,7 +4,7 @@ pipeline {
         maven "Maven"
     }
     environment {
-        AWS_REGION='us-east-2'
+        AWS_REGION = 'us-east-2'
     }
     stages {
         stage('test') {
@@ -27,6 +27,19 @@ pipeline {
         stage('Build') {
             steps {
                 sh "mvn clean package -Dmaven.test.skip"
+            }
+        }
+        stage('ECR Push') {
+            steps {
+                script {
+                    withCredentials([string(credentialsId:'cfe0c5bd-0177-404d-83e1-bbb3044b52d0', variable:'AWS_ID')])
+                    {
+                        sh 'aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com'
+                        sh 'docker build -t java-user-service .'
+                        sh 'docker tag java-user-service:latest ${AWS_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/java-user-service:latest'
+                        sh 'docker push ${AWS_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/java-user-service:latest'
+                    }
+                }
             }
         }
     }
