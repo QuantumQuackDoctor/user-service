@@ -43,4 +43,11 @@ pipeline {
             }
         }
     }
+    post {
+        success {
+            script {
+                sh 'docker image prune -f -a'
+            }
+        }
+    }
 }
