@@ -42,6 +42,11 @@ pipeline {
                 }
             }
         }
+        stage('Template Update'){
+            steps {
+                sh 'aws cloudformation update-stack --stack-name JavaDevStack --use-previous-template'
+            }
+        }
     }
     post {
         success {
