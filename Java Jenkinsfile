@@ -44,7 +44,7 @@ pipeline {
         }
         stage('Template Update'){
             steps {
-                sh 'aws cloudformation update-stack --stack-name JavaDevStack --use-previous-template'
+                sh 'aws cloudformation update-stack --stack-name JavaDevStack --use-previous-template --region us-east-2'
             }
         }
     }
