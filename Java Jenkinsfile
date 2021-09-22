@@ -42,11 +42,6 @@ pipeline {
                 }
             }
         }
-        stage('Template Update'){
-            steps {
-                sh 'aws cloudformation update-stack --stack-name JavaDevStack --use-previous-template --region us-east-2 --no-fail-on-empty-changeset --parameters ParameterKey=DBPassword,UsePreviousValue=true ParameterKey=DBUsername,UsePreviousValue=true --capabilities CAPABILITY_NAMED_IAM'
-            }
-        }
     }
     post {
         success {
