@@ -1,6 +1,5 @@
 package com.ss.user.api;
 
-import com.database.ormlibrary.user.SettingsEntity;
 import com.database.security.AuthDetails;
 import com.ss.user.errors.InvalidCredentialsException;
 import com.ss.user.errors.UserNotFoundException;
