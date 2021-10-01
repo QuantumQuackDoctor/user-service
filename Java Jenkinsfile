@@ -3,9 +3,6 @@ pipeline {
     tools{
         maven "Maven"
     }
-    environment {
-        AWS_REGION = 'us-east-2'
-    }
     stages {
         stage('test') {
             steps {
@@ -36,7 +33,7 @@ pipeline {
                     {
                         sh 'aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com'
                         sh 'docker build -t java-user-service .'
-                        sh 'docker tag java-user-service:latest ${AWS_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/java-user-service:latest'
+                        sh 'docker tag user-service:latest ${AWS_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/user-service:latest'
                         sh 'docker push ${AWS_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/java-user-service:latest'
                     }
                 }
@@ -44,7 +41,7 @@ pipeline {
         }
         stage('Template Update'){
             steps {
-                sh 'aws cloudformation update-stack --stack-name JavaDevStack --use-previous-template --region us-east-2 --parameters ParameterKey=DBPassword,UsePreviousValue=true ParameterKey=DBUsername,UsePreviousValue=true --capabilities CAPABILITY_NAMED_IAM'
+                sh 'aws cloudformation deploy --stack-name UserServiceStack --region "${AWS_REGION}" --template-file userService.template --parameter-overrides ImageURL="${AWS_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/user-service:latest" BaseStackName=BaseInfrastructure  --capabilities CAPABILITY_NAMED_IAM'
             }
         }
     }
