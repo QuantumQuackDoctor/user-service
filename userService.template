@@ -83,7 +83,7 @@ Resources:
             LogDriver: awslogs
             Options:
               awslogs-group: !Ref UserServiceLogGroup
-              awslogs-steream-previx: US-
+              awslogs-stream-prefix: US-
               awslogs-region: !Ref "AWS::Region"
       Cpu: 512
       Memory: 1024
