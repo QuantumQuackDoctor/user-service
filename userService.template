@@ -65,7 +65,7 @@ Resources:
               HostPort: 8080
               Protocol: tcp
           Environment:
-            - Name: SPRING_APPLCIATION_JSON
+            - Name: SPRING_APPLICATION_JSON
               Value: !Join
                 - ""
                 - - '{"spring":{"datasource":{"url":"jdbc:postgresql://'
