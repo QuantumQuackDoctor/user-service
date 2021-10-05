@@ -26,6 +26,7 @@ import java.util.UUID;
 
 @Controller
 @RequestMapping(value = "/accounts")
+@CrossOrigin(origins = "https://api.drscrumptious.com")
 public class AuthApiController {
 
     private final UserService userService;
