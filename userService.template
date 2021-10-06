@@ -78,7 +78,7 @@ Resources:
                   - "{{resolve:secretsmanager:DBUsername}}"
                   - '","password":"'
                   - "{{resolve:secretsmanager:DBPassword}}"
-                  - '"}},"jwt":{"secret":"SECRET"},"server":{"port":"8080"}}'
+                  - '"}},"jwt":{"secret":"SECRET"},"server":{"port":"8080"},"admin-portal-url": "https://admin.drscrumptious.com", "user-portal-url": "https://www.drscrumptious.com"}'
           LogConfiguration:
             LogDriver: awslogs
             Options:
