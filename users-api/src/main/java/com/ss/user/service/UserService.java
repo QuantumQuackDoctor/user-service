@@ -191,12 +191,6 @@ public class UserService {
         user.getSettings().setTheme(entity.getSettings().getThemes().getDark() ? UserSettings.ThemeEnum.DARK : UserSettings.ThemeEnum.LIGHT);
 
         List<Long> orderIDs = new ArrayList<>();
-        if (entity.getOrderList() != null) {
-            entity.getOrderList().forEach(orderEntity -> orderIDs.add(orderEntity.getId()));
-            user.setOrders(orderIDs);
-        }else{
-            user.setOrders(Collections.emptyList());
-        }
 
         //delete password
         user.setPassword(null);
