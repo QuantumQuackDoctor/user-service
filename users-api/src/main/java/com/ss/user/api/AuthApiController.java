@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,6 +26,7 @@ import javax.validation.Valid;
 import java.util.UUID;
 
 @Controller
+@Slf4j
 @RequestMapping(value = "/accounts")
 @CrossOrigin(origins = "https://api.drscrumptious.com")
 public class AuthApiController {
@@ -72,6 +74,7 @@ public class AuthApiController {
 
     @ExceptionHandler(MessageRejectedException.class)
     public ResponseEntity<String> emailFailedToSend(MessageRejectedException e) {
+        log.warn("MessageRejectedException - " + e.getMessage());
         return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
