@@ -5,12 +5,14 @@ import com.database.security.JwtTokenUtil;
 import com.ss.user.errors.InvalidCredentialsException;
 import com.ss.user.model.AuthRequest;
 import com.ss.user.model.AuthResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class AuthService {
 
     private final AuthenticationManager authenticationManager;
@@ -31,6 +33,7 @@ public class AuthService {
         if (authentication.isAuthenticated()) {
             return new AuthResponse(jwtUtil.createJwt((AuthDetails) authentication.getPrincipal()));
         }
+        log.info("Authentication Failed - username: " + req.getEmail());
         throw new InvalidCredentialsException("Invalid Credentials");
     }
 

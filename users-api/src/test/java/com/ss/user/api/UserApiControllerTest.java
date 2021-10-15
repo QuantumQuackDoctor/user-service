@@ -137,7 +137,6 @@ class UserApiControllerTest {
         user.setSettings(new SettingsEntity().setNotifications(
                 new NotificationsEntity().setEmail(true).setPhoneOption(true)).setThemes(
                 new ThemesEntity().setDark(true)));
-        user.setOrderList(Collections.emptyList());
         return user;
     }
 }

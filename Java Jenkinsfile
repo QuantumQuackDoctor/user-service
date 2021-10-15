@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    parameters {
+        string(name: 'Environment', defaultValue: params.Environment ?: '')
+    }
     tools{
         maven "Maven"
     }
@@ -31,10 +34,10 @@ pipeline {
                 script {
                     withCredentials([string(credentialsId:'cfe0c5bd-0177-404d-83e1-bbb3044b52d0', variable:'AWS_ID')])
                     {
-                        sh 'aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com'
-                        sh 'docker build -t user-service-prod .'
-                        sh 'docker tag user-service-prod:latest ${AWS_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/user-service-prod:latest'
-                        sh 'docker push ${AWS_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/user-service-prod:latest'
+                        sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+                        sh "docker build -t user-service-${params.Environment} ."
+                        sh "docker tag user-service-${params.Environment}:latest ${AWS_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/user-service-${params.Environment}:latest"
+                        sh "docker push ${AWS_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/user-service-${params.Environment}:latest"
                     }
                 }
             }
@@ -43,7 +46,7 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId:'cfe0c5bd-0177-404d-83e1-bbb3044b52d0', variable:'AWS_ID')])
                 {
-                    sh 'aws cloudformation deploy --stack-name UserServiceStack --region "${AWS_REGION}" --template-file userService.template --parameter-overrides ImageURL=${AWS_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/user-service-prod:latest --capabilities CAPABILITY_NAMED_IAM'
+                    sh "aws cloudformation deploy --stack-name UserServiceStack --region ${AWS_REGION} --template-file userService.template --parameter-overrides ImageURL=${AWS_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/user-service-${params.Environment}:latest Environment=${params.Environment} --capabilities CAPABILITY_NAMED_IAM"
                 }
             }
         }
