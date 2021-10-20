@@ -13,10 +13,28 @@ public class UserDetailsConfig {
 
     @Bean
     public UserDetailsService testUserDetailsService() {
-        return s -> new AuthDetails(
-                (long) 1,
-                "email",
-                "password",
-                Collections.singletonList(new SimpleGrantedAuthority("user")));
+        return s -> {
+            switch (s) {
+                case "driver":
+                    return new AuthDetails(
+                            (long) 1,
+                            "email",
+                            "password",
+                            Collections.singletonList(new SimpleGrantedAuthority("driver")));
+                case "admin":
+                    return new AuthDetails(
+                            (long) 1,
+                            "email",
+                            "password",
+                            Collections.singletonList(new SimpleGrantedAuthority("admin")));
+                default:
+                    return new AuthDetails(
+                            (long) 1,
+                            "email",
+                            "password",
+                            Collections.singletonList(new SimpleGrantedAuthority("user")));
+
+            }
+        };
     }
 }

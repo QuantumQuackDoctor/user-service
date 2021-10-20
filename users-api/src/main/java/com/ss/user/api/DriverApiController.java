@@ -1,5 +1,6 @@
 package com.ss.user.api;
 
+import com.database.security.AuthDetails;
 import com.ss.user.errors.EmailTakenException;
 import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.Driver;
@@ -8,14 +9,13 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import javax.websocket.server.PathParam;
 
 @Controller
 @RequestMapping("/accounts")
@@ -62,7 +62,7 @@ public class DriverApiController {
             @Authorization(value = "JWT")
     }, tags = {"user",})
     @PreAuthorize("hasAuthority('admin')")
-    public ResponseEntity<Void> deleteDriver(@PathVariable(value = "id") Long id){
+    public ResponseEntity<Void> deleteDriver(@PathVariable(value = "id") Long id) {
         driverService.deleteDriver(id);
         return ResponseEntity.ok(null);
     }
@@ -77,7 +77,23 @@ public class DriverApiController {
     public ResponseEntity<Driver> getDriver(
             @RequestBody @Valid Driver driver,
             @RequestParam(value = "update-password", defaultValue = "false") boolean updatePassword) throws UserNotFoundException {
-        if(driver.getId() == null) return ResponseEntity.notFound().build();
+        if (driver.getId() == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(driverService.updateDriver(driver, updatePassword));
+    }
+
+    @PostMapping("/driver/checkin")
+    @PreAuthorize("hasAuthority('driver')")
+    public ResponseEntity<Void> checkIn(Authentication authentication) throws UserNotFoundException {
+        AuthDetails authDetails = (AuthDetails) authentication.getPrincipal();
+        driverService.changeStatus(authDetails.getId(), true);
+        return ResponseEntity.ok(null);
+    }
+
+    @PostMapping("/driver/checkout")
+    @PreAuthorize("hasAuthority('driver')")
+    public ResponseEntity<Void> checkOut(Authentication authentication) throws UserNotFoundException {
+        AuthDetails authDetails = (AuthDetails) authentication.getPrincipal();
+        driverService.changeStatus(authDetails.getId(), false);
+        return ResponseEntity.ok(null);
     }
 }
