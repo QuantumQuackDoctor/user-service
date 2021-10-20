@@ -18,7 +18,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -46,11 +45,11 @@ class DriverApiControllerTest {
         Driver driverDTO = createSampleDriverDTO();
 
         MvcResult result = mockMvc.perform(put("/accounts/driver")
-                .content(mapper.writeValueAsString(driverDTO))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(mapper.writeValueAsString(driverDTO))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
-        Long id = ((Number)JsonPath.read(result.getResponse().getContentAsString(), "id")).longValue();
+        Long id = ((Number) JsonPath.read(result.getResponse().getContentAsString(), "id")).longValue();
 
         Optional<DriverEntity> driverEntityOptional = driverRepo.findById(id);
 
@@ -80,7 +79,7 @@ class DriverApiControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
-        long id = ((Number)JsonPath.read(result.getResponse().getContentAsString(), "id")).longValue();
+        long id = ((Number) JsonPath.read(result.getResponse().getContentAsString(), "id")).longValue();
 
         mockMvc.perform(get("/accounts/driver/" + id))
                 .andExpect(status().isOk());
@@ -106,7 +105,7 @@ class DriverApiControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
-        long id = ((Number)JsonPath.read(result.getResponse().getContentAsString(), "id")).longValue();
+        long id = ((Number) JsonPath.read(result.getResponse().getContentAsString(), "id")).longValue();
 
         driverDTO.setId(id);
         driverDTO.setCar("new Car");
@@ -141,7 +140,7 @@ class DriverApiControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
-        long id = ((Number)JsonPath.read(result.getResponse().getContentAsString(), "id")).longValue();
+        long id = ((Number) JsonPath.read(result.getResponse().getContentAsString(), "id")).longValue();
 
         driverDTO.setId(id);
         driverDTO.setCar("new Car");
@@ -167,7 +166,7 @@ class DriverApiControllerTest {
 
     @Test
     @WithMockUser(username = "username", authorities = "admin")
-    void updateDriver_WithInvalidId_ShouldReturnNotFound() throws Exception{
+    void updateDriver_WithInvalidId_ShouldReturnNotFound() throws Exception {
         Driver driverDTO = createSampleDriverDTO();
         driverDTO.setId(279037493727L);
 
@@ -177,7 +176,7 @@ class DriverApiControllerTest {
 
     @Test
     @WithMockUser(username = "username", authorities = "admin")
-    void updateDriver_WithNullId_ShouldReturnNotFound() throws Exception{
+    void updateDriver_WithNullId_ShouldReturnNotFound() throws Exception {
         Driver driverDTO = createSampleDriverDTO();
         driverDTO.setId(null);
 
@@ -196,7 +195,7 @@ class DriverApiControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
-        long id = ((Number)JsonPath.read(result.getResponse().getContentAsString(), "id")).longValue();
+        long id = ((Number) JsonPath.read(result.getResponse().getContentAsString(), "id")).longValue();
 
 
         mockMvc.perform(delete("/accounts/driver/" + id)).andExpect(status().isOk());

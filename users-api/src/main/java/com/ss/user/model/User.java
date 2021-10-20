@@ -62,7 +62,7 @@ public class User {
 
     private UserSettings settings;
 
-    @JsonProperty ("orders")
+    @JsonProperty("orders")
     private List<Long> orders;
 
     @Override

@@ -39,6 +39,17 @@ public class DriverService {
         this.driverRepo = driverRepo;
     }
 
+    static void convertSettingsToEntity(UserEntity userEntity, UserSettings settings2, DateTimeFormatter formatter, String dob) {
+        SettingsEntity settings = new SettingsEntity();
+        settings.setNotifications(new NotificationsEntity()
+                .setEmail(settings2.getNotifications().getEmail())
+                .setPhoneOption(settings2.getNotifications().getText()));
+        settings.setThemes(new ThemesEntity().setDark(settings2.getTheme().equals(UserSettings.ThemeEnum.DARK)));
+
+        userEntity.setBirthDate(LocalDate.from(formatter.parse(dob)));
+        userEntity.setSettings(settings);
+    }
+
     public Driver getDriverById(Long id) throws UserNotFoundException {
         return convertToDTO(driverRepo.findById(id).orElseThrow(() -> new UserNotFoundException("driver not found")));
     }
@@ -70,10 +81,9 @@ public class DriverService {
         return convertToDTO(driverRepo.save(driverEntity));
     }
 
-    public void deleteDriver(Long id){
+    public void deleteDriver(Long id) {
         driverRepo.deleteById(id);
     }
-
 
     private UserRoleEntity getDriverRole() {
         Optional<UserRoleEntity> role = userRoleRepo.findByRole("driver");
@@ -125,16 +135,5 @@ public class DriverService {
 
     private DriverRating convertRatingToDTO(DriverRatingEntity entity) {
         return mapper.map(entity, DriverRating.class);
-    }
-
-    static void convertSettingsToEntity(UserEntity userEntity, UserSettings settings2, DateTimeFormatter formatter, String dob) {
-        SettingsEntity settings = new SettingsEntity();
-        settings.setNotifications(new NotificationsEntity()
-                .setEmail(settings2.getNotifications().getEmail())
-                .setPhoneOption(settings2.getNotifications().getText()));
-        settings.setThemes(new ThemesEntity().setDark(settings2.getTheme().equals(UserSettings.ThemeEnum.DARK)));
-
-        userEntity.setBirthDate(LocalDate.from(formatter.parse(dob)));
-        userEntity.setSettings(settings);
     }
 }

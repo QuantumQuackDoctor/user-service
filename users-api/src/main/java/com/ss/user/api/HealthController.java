@@ -10,7 +10,7 @@ public class HealthController {
 
     @GetMapping("/health")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<Void> healthCheck(){
+    public ResponseEntity<Void> healthCheck() {
         return ResponseEntity.ok(null);
     }
 }
