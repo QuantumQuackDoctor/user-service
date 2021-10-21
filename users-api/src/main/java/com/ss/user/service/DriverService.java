@@ -52,7 +52,6 @@ public class DriverService {
         return convertToDTO(driverRepo.save(driver));
     }
 
-
     private UserRoleEntity getDriverRole() {
         Optional<UserRoleEntity> role = userRoleRepo.findByRole("driver");
         if (role.isPresent()) {
@@ -108,6 +107,8 @@ public class DriverService {
         SettingsEntity settings = new SettingsEntity();
         settings.setNotifications(new NotificationsEntity()
                 .setEmail(settings2.getNotifications().getEmail())
+                        .setEmailDelivery(settings2.getNotifications().getEmailDelivery())
+                        .setEmailOrder(settings2.getNotifications().getEmailOrder())
                 .setPhoneOption(settings2.getNotifications().getText()));
         settings.setThemes(new ThemesEntity().setDark(settings2.getTheme().equals(UserSettings.ThemeEnum.DARK)));
 

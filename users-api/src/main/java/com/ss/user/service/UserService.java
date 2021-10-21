@@ -14,6 +14,7 @@ import com.ss.user.model.UserSettings;
 import com.ss.user.repo.OrderRepo;
 import com.ss.user.repo.UserRepo;
 import com.ss.user.repo.UserRoleRepo;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,6 +25,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
+@Slf4j (topic = "UserServiceLogs")
 public class UserService {
 
     private final UserRepo userRepo;
@@ -116,21 +118,22 @@ public class UserService {
     }
 
     public UserSettings updateNotifications(Long userId, UserSettings userSettings) throws UserNotFoundException {
-
+        log.info(userSettings.toString());
         Optional<UserEntity> userEntityOptional = userRepo.findById(userId);
         if (userEntityOptional.isPresent()) {
             UserEntity entity = userEntityOptional.get();
 
-            if (!entity.getSettings().getNotifications().getEmail() && userSettings.getNotifications().getEmail()){
+            if (!entity.getSettings().getNotifications().getEmail() && userSettings.getNotifications().getEmail()) {
                 entity.setSettings(convertToSettingEntity(userSettings));
                 userRepo.save(entity);
                 sendEmailNotificationUpdate(true, entity.getEmail());
-            }else if (entity.getSettings().getNotifications().getEmail() && !userSettings.getNotifications().getEmail()){
+            } else if (entity.getSettings().getNotifications().getEmail() && !userSettings.getNotifications().getEmail()) {
                 entity.setSettings(convertToSettingEntity(userSettings));
                 userRepo.save(entity);
                 sendEmailNotificationUpdate(false, entity.getEmail());
-            }
-            else{
+            } else {
+                if (!entity.getSettings().equals(convertToSettingEntity(userSettings)))
+                    sendNotificationUpdateConfirmation(entity.getEmail());
                 entity.setSettings(convertToSettingEntity(userSettings));
                 userRepo.save(entity);
             }
@@ -139,9 +142,18 @@ public class UserService {
         throw new UserNotFoundException("User Not Found!");
     }
 
-    public void sendEmailNotificationUpdate (boolean active, String userEmail){
-        String htmlBody = active? "<p> You have chosen to activate email notifications from Scrumptious!\n" :
+    private void sendNotificationUpdateConfirmation(String userEmail) {
+        String htmlBody = "<p>Your settings have been successfully updated.";
+        sendEmail(htmlBody, userEmail);
+    }
+
+    public void sendEmailNotificationUpdate(boolean active, String userEmail) {
+        String htmlBody = active ? "<p> You have chosen to activate email notifications from Scrumptious!\n" :
                 "<p> You have unsubscribed from Scrumptious email notifications, we are sad to see you go :(";
+        sendEmail(htmlBody, userEmail);
+    }
+
+    private void sendEmail(String htmlBody, String userEmail) {
         SendEmailRequest request = new SendEmailRequest()
                 .withDestination(new Destination().withToAddresses(userEmail))
                 .withMessage(new Message()
@@ -222,24 +234,18 @@ public class UserService {
         user.setIsVeteran(entity.getVeteran());
         user.setDOB(entity.getBirthDate().format((formatter)));
         user.getSettings().getNotifications().setEmail(entity.getSettings().getNotifications().getEmail());
+        user.getSettings().getNotifications().setEmailDelivery(entity.getSettings().getNotifications().getEmailDelivery());
+        user.getSettings().getNotifications().setEmailOrder(entity.getSettings().getNotifications().getEmailOrder());
         user.getSettings().getNotifications().setText(entity.getSettings().getNotifications().getPhoneOption());
         user.getSettings().setTheme(entity.getSettings().getThemes().getDark() ? UserSettings.ThemeEnum.DARK : UserSettings.ThemeEnum.LIGHT);
-
-        List<Long> orderIDs = new ArrayList<>();
-        if (entity.getOrderList() != null) {
-            entity.getOrderList().forEach(orderEntity -> orderIDs.add(orderEntity.getId()));
-            user.setOrders(orderIDs);
-        } else {
-            user.setOrders(Collections.emptyList());
-        }
 
         //delete password
         user.setPassword(null);
         return user;
     }
 
-    private SettingsEntity convertToSettingEntity (UserSettings userSettings) {
-        SettingsEntity entity = mapper.map (userSettings, SettingsEntity.class);
+    private SettingsEntity convertToSettingEntity(UserSettings userSettings) {
+        SettingsEntity entity = mapper.map(userSettings, SettingsEntity.class);
         entity.setThemes(new ThemesEntity().setDark(userSettings.getTheme().equals(UserSettings.ThemeEnum.DARK)));
         entity.setNotifications(entity.getNotifications().setPhoneOption(userSettings.getNotifications().getText()));
         return entity;

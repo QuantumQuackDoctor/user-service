@@ -5,7 +5,6 @@ import com.amazonaws.services.simpleemail.model.SendEmailRequest;
 import com.database.ormlibrary.user.*;
 import com.ss.user.errors.ConfirmationTokenExpiredException;
 import com.ss.user.errors.InvalidAdminEmailException;
-import com.ss.user.errors.InvalidCredentialsException;
 import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.User;
 import com.ss.user.model.UserSettings;
@@ -94,7 +93,6 @@ class UserServiceTest {
         notifications.setPhoneOption(true);
         settings.setNotifications(notifications);
         testInsert.setSettings(settings);
-        testInsert.setOrderList(Collections.emptyList());
         testInsert.setUserRole(new UserRoleEntity().setRole("admin"));
         return testInsert;
     }

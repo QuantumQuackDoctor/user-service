@@ -3,7 +3,6 @@ package com.ss.user.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
@@ -19,6 +18,14 @@ public class UserSettingsNotifications {
     @JsonProperty("email")
     @NotNull
     private Boolean email;
+
+    @JsonProperty("emailOrder")
+    @NotNull
+    private Boolean emailOrder;
+
+    @JsonProperty("emailDelivery")
+    @NotNull
+    private Boolean emailDelivery;
 
     @JsonProperty("text")
     @NotNull
