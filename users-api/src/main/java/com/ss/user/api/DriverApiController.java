@@ -19,6 +19,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.websocket.server.PathParam;
 
 @Controller
 @RequestMapping("/accounts")
@@ -84,12 +85,35 @@ public class DriverApiController {
             @Authorization(value = "JWT")
     }, tags = {"user",})
     @PreAuthorize("hasAuthority('admin')")
-    public ResponseEntity<Driver> getDriver(@PathVariable(value = "id")Long id) throws UserNotFoundException {
+    public ResponseEntity<Driver> getDriver(@PathVariable(value = "id") Long id) throws UserNotFoundException {
         return ResponseEntity.ok(driverService.getDriverById(id));
     }
 
+    @DeleteMapping("/driver/{id}")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Success", response = Driver.class),
+            @ApiResponse(code = 401, message = "Access token is missing or invalid", response = String.class),
+            @ApiResponse(code = 404, message = "Not found")})
+    @ApiOperation(value = "delete driver", nickname = "deleteDriver", authorizations = {
+            @Authorization(value = "JWT")
+    }, tags = {"user",})
+    @PreAuthorize("hasAuthority('admin')")
+    public ResponseEntity<Void> deleteDriver(@PathVariable(value = "id") Long id){
+        driverService.deleteDriver(id);
+        return ResponseEntity.ok(null);
+    }
+
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<String> handleDriverNotFound(){
+    public ResponseEntity<String> handleDriverNotFound() {
         return ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/driver")
+    @PreAuthorize("hasAuthority('admin')")
+    public ResponseEntity<Driver> getDriver(
+            @RequestBody @Valid Driver driver,
+            @RequestParam(value = "update-password", defaultValue = "false") boolean updatePassword) throws UserNotFoundException {
+        if(driver.getId() == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(driverService.updateDriver(driver, updatePassword));
     }
 }

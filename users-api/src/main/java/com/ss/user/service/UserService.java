@@ -12,6 +12,7 @@ import com.ss.user.model.UserSettings;
 import com.ss.user.repo.OrderRepo;
 import com.ss.user.repo.UserRepo;
 import com.ss.user.repo.UserRoleRepo;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,6 +26,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class UserService {
 
     private final UserRepo userRepo;
@@ -79,6 +81,7 @@ public class UserService {
                 }
                 toInsert.setUserRole(role.get());
             } else {
+                log.info("Invalid Admin Account creation attempted with - " + user.getEmail());
                 throw new InvalidAdminEmailException("invalid email for admin account");
             }
         }
@@ -95,10 +98,6 @@ public class UserService {
     private void sendActivationEmail(String recipient, UUID uuid, String portalUrl) {
 
         String activationLink = portalUrl + "/activate/" + uuid.toString();
-
-//        request.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
-//        request.setFrom("ezra.john.mitchell@gmail.com");
-//        request.setSubject("Scrumptious account activation");
 
         String htmlBody = String.format(
                 "<a href=\"%s\"><h1 style=\"background-color: #2aa4d2; color: #f79e0; padding: 1em; text-decoration: none;\">Activate your account</h1></a>", activationLink) +
@@ -134,8 +133,10 @@ public class UserService {
                 userRepo.save(userToActivate);
                 throw new ConfirmationTokenExpiredException("Confirmation token expired");
             }
-        } else
+        } else {
+            log.info("Invalid activation token - " + uuid);
             throw new UserNotFoundException("Token invalid");
+        }
     }
 
     public User getUser(String email) throws UserNotFoundException {
@@ -191,12 +192,6 @@ public class UserService {
         user.getSettings().setTheme(entity.getSettings().getThemes().getDark() ? UserSettings.ThemeEnum.DARK : UserSettings.ThemeEnum.LIGHT);
 
         List<Long> orderIDs = new ArrayList<>();
-//        if (entity.getOrderList() != null) {
-//            entity.getOrderList().forEach(orderEntity -> orderIDs.add(orderEntity.getId()));
-//            user.setOrders(orderIDs);
-//        }else{
-            user.setOrders(Collections.emptyList());
-//        }
 
         //delete password
         user.setPassword(null);

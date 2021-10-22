@@ -1,62 +1,115 @@
 package com.ss.user.service;
 
-import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
-import com.amazonaws.services.simpleemail.model.SendEmailRequest;
 import com.database.ormlibrary.driver.DriverEntity;
+import com.database.ormlibrary.user.NotificationsEntity;
+import com.database.ormlibrary.user.SettingsEntity;
+import com.database.ormlibrary.user.ThemesEntity;
 import com.database.ormlibrary.user.UserEntity;
+import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.Driver;
-import com.ss.user.model.UserSettings;
-import com.ss.user.model.UserSettingsNotifications;
 import com.ss.user.repo.DriverRepo;
-import com.ss.user.repo.OrderRepo;
-import com.ss.user.repo.UserRepo;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDate;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
+
 @SpringBootTest
-public class DriverServiceTest {
-    @MockBean(UserRepo.class)
-    UserRepo userRepo;
-    @MockBean(DriverRepo.class)
+class DriverServiceTest {
+    @MockBean
     DriverRepo driverRepo;
-    @MockBean(OrderRepo.class)
-    OrderRepo orderRepo;
-    @Captor
-    ArgumentCaptor<DriverEntity> driverCaptor;
-    @Autowired
-    UserService userService;
     @Autowired
     DriverService driverService;
     @Autowired
     PasswordEncoder passwordEncoder;
 
+    @BeforeEach
+    void setup() {
+        DriverEntity sampleEntity = createSampleDriverEntity();
+        sampleEntity.setId(1L);
+        when(driverRepo.findById(1L)).thenReturn(Optional.of(sampleEntity));
+    }
 
-    private Driver createSampleDriverDTO() {
-        Driver driver = new Driver();
-        driver.setId(null);
-        driver.setFirstName("first");
-        driver.setLastName("last");
-        driver.setDOB("2002-07-20");
-        driver.setPassword("password");
-        driver.setPhone("5555555555");
+    @Test
+    void updateDriver_WithoutPassword() throws UserNotFoundException {
+        Driver dto = driverService.convertToDTO(createSampleDriverEntity());
+        dto.setId(1L);
+
+        String newCar = "different value";
+        dto.setCar(newCar);
+        String newPassword = "different password";
+        dto.setPassword(newPassword);
+
+        ArgumentCaptor<DriverEntity> driverEntityArgumentCaptor = ArgumentCaptor.forClass(DriverEntity.class);
+        when(driverRepo.save(driverEntityArgumentCaptor.capture())).thenReturn(createSampleDriverEntity());
+
+        driverService.updateDriver(dto, false);
+
+        DriverEntity driverEntity = driverEntityArgumentCaptor.getValue();
+        assertEquals(driverEntity.getCar(), newCar);
+        assertNotEquals(driverEntity.getUser().getPassword(), newPassword);
+    }
+
+    @Test
+    void updateDriver_WithPassword() throws UserNotFoundException {
+        Driver dto = driverService.convertToDTO(createSampleDriverEntity());
+        dto.setId(1L);
+
+        String newCar = "different value";
+        dto.setCar(newCar);
+        String newPassword = "different password";
+        dto.setPassword(newPassword);
+
+        ArgumentCaptor<DriverEntity> driverEntityArgumentCaptor = ArgumentCaptor.forClass(DriverEntity.class);
+        when(driverRepo.save(driverEntityArgumentCaptor.capture())).thenReturn(createSampleDriverEntity());
+
+        driverService.updateDriver(dto, true);
+
+        DriverEntity driverEntity = driverEntityArgumentCaptor.getValue();
+        assertEquals(driverEntity.getCar(), newCar);
+        assertTrue(passwordEncoder.matches(newPassword, driverEntity.getUser().getPassword()));
+    }
+
+    @Test
+    void updateDriver_WithInvalidId() throws UserNotFoundException {
+
+        Driver dto = driverService.convertToDTO(createSampleDriverEntity());
+        dto.setId(5L);
+
+        String newCar = "different value";
+        dto.setCar(newCar);
+        String newPassword = "different password";
+        dto.setPassword(newPassword);
+
+        assertThrows(UserNotFoundException.class,() -> driverService.updateDriver(dto, true));
+    }
+
+    private DriverEntity createSampleDriverEntity() {
+        DriverEntity driver = new DriverEntity();
+        driver.setUser(createSampleUserEntity());
         driver.setCar("big car");
-        driver.setSettings(createUserSettings());
-        driver.setEmail("driver@email.com");
-
         return driver;
     }
 
-    private UserSettings createUserSettings() {
-        UserSettings settings = new UserSettings();
-        settings.setTheme(UserSettings.ThemeEnum.LIGHT);
-        UserSettingsNotifications notifications = new UserSettingsNotifications();
-        notifications.setText(false);
-        notifications.setEmail(false);
-        settings.setNotifications(notifications);
-        return settings;
+    private UserEntity createSampleUserEntity() {
+        UserEntity user = new UserEntity();
+        user.setEmail("email@invalid.com");
+        user.setFirstName("firstName");
+        user.setLastName("lastName");
+        user.setPhone("phone");
+        user.setPassword("password");
+        user.setBirthDate(LocalDate.parse("2002-07-20"));
+        user.setSettings(new SettingsEntity().setNotifications(
+                new NotificationsEntity().setEmail(true).setPhoneOption(true)).setThemes(
+                new ThemesEntity().setDark(true)));
+        return user;
     }
 }
