@@ -16,7 +16,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 3
-      LogGroupName: UserServiceGroup
+      LogGroupName: !Sub "UserServiceGroup-${Environment}"
   TaskRole:
     Type: AWS::IAM::Role
     Properties:
