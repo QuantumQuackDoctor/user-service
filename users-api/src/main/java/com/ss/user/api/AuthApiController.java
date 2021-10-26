@@ -87,7 +87,7 @@ public class AuthApiController {
      * or Invalid user (status code 400)
      * or Account not activated (status code 401)
      */
-    @PreAuthorize("permitAll")
+    @PreAuthorize("permitAll()")
     @PostMapping(value = "/login", produces = {"application/json", "application/xml"}, consumes = {"application/json", "application/xml"})
     @ApiResponses({
             @ApiResponse(code = 200, message = "Authenticated", response = AuthResponse.class),
@@ -98,7 +98,7 @@ public class AuthApiController {
         return ResponseEntity.ok(authService.authenticate(authRequest));
     }
 
-    @PreAuthorize("permitAll")
+    @PreAuthorize("permitAll()")
     @PostMapping(value = "/activate/{token}")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Account activated"),
