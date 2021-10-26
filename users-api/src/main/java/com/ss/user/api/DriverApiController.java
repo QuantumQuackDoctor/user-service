@@ -1,9 +1,11 @@
 package com.ss.user.api;
 
 import com.database.security.AuthDetails;
+import com.ss.user.errors.DriverNotFoundException;
 import com.ss.user.errors.EmailTakenException;
 import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.Driver;
+import com.ss.user.model.User;
 import com.ss.user.service.DriverService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -12,6 +14,7 @@ import io.swagger.annotations.Authorization;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,8 +26,40 @@ public class DriverApiController {
 
     private final DriverService driverService;
 
+    @org.springframework.beans.factory.annotation.Autowired
     public DriverApiController(DriverService driverService) {
         this.driverService = driverService;
+    }
+
+
+    /**
+     * GET /driver : Get Account Details
+     * Retrieves driver data using JWT (id and password will be null)
+     *
+     * @return OK (status code 200)
+     * or Access token is missing or invalid (status code 401)
+     * or Not Found (status code 404)
+     */
+    @GetMapping(value = "/driver", produces = {"application/json", "application/xml"})
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK", response = User.class),
+            @ApiResponse(code = 401, message = "Access token is missing or invalid", response = String.class),
+            @ApiResponse(code = 404, message = "Not Found")})
+    @ApiOperation(value = "Get Driver Account Details", nickname = "getDriver", notes = "Retrieves driver data using JWT (id and password will be null)", response = Driver.class, authorizations = {
+
+            @Authorization(value = "JWT")
+    }, tags = {"driver",})
+
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Driver> getDriver(Authentication authentication) throws DriverNotFoundException {
+        UserDetails authDetails = (UserDetails) authentication.getPrincipal();
+        Driver DTO = driverService.getDriver(authDetails.getUsername());
+        return ResponseEntity.ok(DTO);
+    }
+
+    @ExceptionHandler(DriverNotFoundException.class)
+    public ResponseEntity<String> badDriver(UserNotFoundException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @PutMapping("/driver")

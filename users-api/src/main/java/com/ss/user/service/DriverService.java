@@ -3,10 +3,12 @@ package com.ss.user.service;
 import com.database.ormlibrary.driver.DriverEntity;
 import com.database.ormlibrary.driver.DriverRatingEntity;
 import com.database.ormlibrary.user.*;
+import com.ss.user.errors.DriverNotFoundException;
 import com.ss.user.errors.EmailTakenException;
 import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.Driver;
 import com.ss.user.model.DriverRating;
+import com.ss.user.model.User;
 import com.ss.user.model.UserSettings;
 import com.ss.user.repo.DriverRepo;
 import com.ss.user.repo.UserRepo;
@@ -37,6 +39,13 @@ public class DriverService {
         this.passwordEncoder = passwordEncoder;
         this.mapper = mapper;
         this.driverRepo = driverRepo;
+    }
+
+    public Driver getDriver(String email) throws DriverNotFoundException {
+        Optional<DriverEntity> entity = driverRepo.findByUserEmail(email);
+        if (entity.isPresent()) {
+            return convertToDTO(entity.get());
+        } else throw new DriverNotFoundException("Driver not found");
     }
 
     public Driver getDriverById(Long id) throws UserNotFoundException {
