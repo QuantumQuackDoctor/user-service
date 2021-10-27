@@ -146,6 +146,13 @@ public class UserService {
         } else throw new UserNotFoundException("User not found");
     }
 
+    public User getUser(Long id) throws UserNotFoundException {
+        Optional<UserEntity> entity = userRepo.findById(id);
+        if (entity.isPresent()) {
+            return convertToDTO(entity.get());
+        } else throw new UserNotFoundException("User not found");
+    }
+
     public void deleteUser(Long id) {
         //TODO delete orders
         userRepo.deleteById(id);

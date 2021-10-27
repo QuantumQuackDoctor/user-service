@@ -1,6 +1,8 @@
 package com.ss.user.api;
 
+import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.User;
+import com.ss.user.service.UserService;
 import io.swagger.annotations.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,12 +11,17 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
 import java.util.List;
 
 @Controller
 @RequestMapping(value = "/accounts")
 public class UsersApiController {
+
+    private final UserService userService;
+
+    public UsersApiController(UserService userService) {
+        this.userService = userService;
+    }
 
     /**
      * DELETE /users : Admin Delete User
@@ -52,20 +59,13 @@ public class UsersApiController {
      *
      * @param id      Overwrites all other properties (optional)
      * @param email   Overwrites all properties except id (optional)
-     * @param name    fuzzy string match, returns all with above %80ish match (optional)
-     * @param veteran filters all veterans (optional)
-     * @param points  filters &gt;&#x3D; points (optional)
-     * @param role    filters by role (optional)
-     * @param page    page to return (optional)
-     * @param size    number of items in page (optional)
      * @return OK (status code 200)
      * or Bad Query parameter (status code 400)
      * or Access token is missing or invalid (status code 401)
      * or Forbidden (status code 403)
      * or Not Found (status code 404)
      */
-    @ApiOperation(value = "Admin Get Users", nickname = "getUsers", notes = "Get all users or search users", response = User.class, responseContainer = "List", authorizations = {
-
+    @ApiOperation(value = "Admin Get User", nickname = "getUsers", notes = "Get all users or search users", response = User.class, authorizations = {
             @Authorization(value = "JWT")
     }, tags = {"user",})
     @ApiResponses(value = {
@@ -79,9 +79,17 @@ public class UsersApiController {
             produces = {"application/json"}
     )
 
-    @PreAuthorize("hasRole('admin')")
-    public ResponseEntity<List<User>> getUsers(@ApiParam(value = "Overwrites all other properties") @Valid @RequestParam(value = "id", required = false) String id, @ApiParam(value = "Overwrites all properties except id") @Valid @RequestParam(value = "email", required = false) String email, @ApiParam(value = "fuzzy string match, returns all with above %80ish match") @Valid @RequestParam(value = "name", required = false) String name, @ApiParam(value = "filters all veterans") @Valid @RequestParam(value = "veteran", required = false) Boolean veteran, @ApiParam(value = "filters >= points") @Valid @RequestParam(value = "points", required = false) Integer points, @ApiParam(value = "filters by role") @Valid @RequestParam(value = "role", required = false) String role, @Min(0) @ApiParam(value = "page to return") @Valid @RequestParam(value = "page", required = false) Integer page, @Min(1) @ApiParam(value = "number of items in page") @Valid @RequestParam(value = "size", required = false) Integer size) {
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    @PreAuthorize("hasAuthority('admin')")
+    public ResponseEntity<User> getUsers(@ApiParam(value = "Overwrites all other properties")
+                                               @Valid @RequestParam(value = "id", required = false) Long id,
+                                               @ApiParam(value = "Overwrites all properties except id")
+                                               @Valid @RequestParam(value = "email", required = false) String email
+    ) throws UserNotFoundException {
+        if(id != null)
+            return ResponseEntity.ok(userService.getUser(id));
+        else if(email != null)
+            return ResponseEntity.ok(userService.getUser(email));
+        return ResponseEntity.badRequest().body(null);
     }
 
     /**

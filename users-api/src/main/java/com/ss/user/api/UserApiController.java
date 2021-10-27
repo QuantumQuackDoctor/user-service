@@ -53,11 +53,6 @@ public class UserApiController {
         return ResponseEntity.ok(DTO);
     }
 
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<String> badUser(UserNotFoundException e) {
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-    }
-
     /**
      * DELETE /user : Delete Account (uses JWT to find account)
      *

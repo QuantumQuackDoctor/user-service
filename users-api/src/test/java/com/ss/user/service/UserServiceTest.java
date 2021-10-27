@@ -5,7 +5,6 @@ import com.amazonaws.services.simpleemail.model.SendEmailRequest;
 import com.database.ormlibrary.user.*;
 import com.ss.user.errors.ConfirmationTokenExpiredException;
 import com.ss.user.errors.InvalidAdminEmailException;
-import com.ss.user.errors.InvalidCredentialsException;
 import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.User;
 import com.ss.user.model.UserSettings;
@@ -243,5 +242,50 @@ class UserServiceTest {
             fail();
         } catch (UserNotFoundException ignored) {
         }
+    }
+
+
+    @Test
+    void getUser_WithValidUserId() throws UserNotFoundException {
+        UserEntity entity = sampleUserEntity();
+        when(userRepo.findById(1L)).thenReturn(Optional.of(entity));
+
+        User user = userService.getUser(1L);
+        assertEquals(entity.getEmail(), user.getEmail());
+        assertEquals(entity.getId(), user.getId());
+        assertEquals(entity.getFirstName(), user.getFirstName());
+        assertEquals(entity.getLastName(), user.getLastName());
+        assertEquals(entity.getPhone(), user.getPhone());
+        assertNull(user.getPassword());
+    }
+
+    @Test
+    void getUser_WithInvalidUserId() {
+        when(userRepo.findById(1L)).thenReturn(Optional.empty());
+        assertThrows(UserNotFoundException.class, () -> {
+            userService.getUser(1L);
+        });
+    }
+    @Test
+
+    void getUser_WithValidUserEmail() throws UserNotFoundException {
+        UserEntity entity = sampleUserEntity();
+        when(userRepo.findByEmail("email")).thenReturn(Optional.of(entity));
+
+        User user = userService.getUser("email");
+        assertEquals(entity.getEmail(), user.getEmail());
+        assertEquals(entity.getId(), user.getId());
+        assertEquals(entity.getFirstName(), user.getFirstName());
+        assertEquals(entity.getLastName(), user.getLastName());
+        assertEquals(entity.getPhone(), user.getPhone());
+        assertNull(user.getPassword());
+    }
+
+    @Test
+    void getUser_WithInvalidUserEmail() {
+        when(userRepo.findByEmail("email")).thenReturn(Optional.empty());
+        assertThrows(UserNotFoundException.class, () -> {
+            userService.getUser("email");
+        });
     }
 }
