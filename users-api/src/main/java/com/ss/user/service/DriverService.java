@@ -94,6 +94,14 @@ public class DriverService {
         }
     }
 
+    public void changeStatus(Long userId, boolean checkedIn) throws UserNotFoundException {
+        DriverEntity driverEntity = driverRepo.findById(userId).orElseThrow(
+                () -> new UserNotFoundException("invalid driver id"));
+        driverEntity.setCheckedIn(checkedIn);
+        driverRepo.save(driverEntity);
+    }
+
+
     public DriverEntity convertToEntity(Driver driver) {
         UserEntity userEntity = mapper.map(driver, UserEntity.class);
         userEntity.setVeteran(false);
