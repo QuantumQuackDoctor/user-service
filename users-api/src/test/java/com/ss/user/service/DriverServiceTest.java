@@ -89,7 +89,7 @@ class DriverServiceTest {
         String newPassword = "different password";
         dto.setPassword(newPassword);
 
-        assertThrows(UserNotFoundException.class,() -> driverService.updateDriver(dto, true));
+        assertThrows(UserNotFoundException.class, () -> driverService.updateDriver(dto, true));
     }
 
     private DriverEntity createSampleDriverEntity() {
