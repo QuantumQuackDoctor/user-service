@@ -46,7 +46,7 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId:'cfe0c5bd-0177-404d-83e1-bbb3044b52d0', variable:'AWS_ID')])
                 {
-                    sh "aws cloudformation deploy --stack-name UserServiceStack --region ${AWS_REGION} --template-file userService.template --parameter-overrides ImageURL=${AWS_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/user-service-${params.Environment}:latest Environment=${params.Environment} --capabilities CAPABILITY_NAMED_IAM"
+                    sh "aws cloudformation deploy --stack-name UserServiceStack-${params.Environment} --region ${AWS_REGION} --template-file userService.template --parameter-overrides ImageURL=${AWS_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/user-service-${params.Environment}:latest Environment=${params.Environment} --capabilities CAPABILITY_NAMED_IAM"
                 }
             }
         }
