@@ -2,8 +2,8 @@ package com.ss.user.service;
 
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.model.*;
-import com.database.ormlibrary.order.OrderEntity;
-import com.database.ormlibrary.user.*;
+import com.database.ormlibrary.user.UserEntity;
+import com.database.ormlibrary.user.UserRoleEntity;
 import com.ss.user.errors.ConfirmationTokenExpiredException;
 import com.ss.user.errors.InvalidAdminEmailException;
 import com.ss.user.errors.UserNotFoundException;
@@ -19,9 +19,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -29,6 +29,7 @@ import java.util.UUID;
 @Slf4j
 public class UserService {
 
+    private static final String admin = "admin";
     private final UserRepo userRepo;
     private final UserRoleRepo userRoleRepo;
     private final OrderRepo orderRepo;
@@ -55,8 +56,6 @@ public class UserService {
     public boolean emailAvailable(String email) {
         return !userRepo.existsByEmail(email);
     }
-
-    private static final String admin = "admin";
 
     public void insertUser(User user, boolean isAdmin) throws InvalidAdminEmailException {
         if (!emailAvailable(user.getEmail())) return;
@@ -151,16 +150,16 @@ public class UserService {
         userRepo.deleteById(id);
     }
 
-    public User updateProfile (User user) throws UserNotFoundException {
+    public User updateProfile(User user) throws UserNotFoundException {
         Optional<UserEntity> entityOptional = userRepo.findById(user.getId());
-        if (entityOptional.isPresent()){
+        if (entityOptional.isPresent()) {
             UserEntity entity = entityOptional.get();
-            if (!user.getEmail().equals(entity.getEmail())){
+            if (!user.getEmail().equals(entity.getEmail())) {
                 entity.setActivated(false);
                 entity.setActivationToken(UUID.randomUUID());
                 entity.setActivationTokenExpiration(Instant.now().plusMillis(7200000));
                 sendActivationEmail(user.getEmail(), entity.getActivationToken(),
-                        entity.getUserRole().getRole().equals("admin")? adminPortalURL : userPortalURL);
+                        entity.getUserRole().getRole().equals("admin") ? adminPortalURL : userPortalURL);
                 entity.setEmail(user.getEmail());
             }
             UserEntity updateEntity = convertToEntity(user);
@@ -170,7 +169,7 @@ public class UserService {
             entity.setLastName(updateEntity.getLastName());
             userRepo.save(entity);
             return convertToDTO(entity);
-        }else{
+        } else {
             throw new UserNotFoundException("User not found!");
         }
     }
@@ -182,7 +181,8 @@ public class UserService {
         return entity;
     }
 
-    private User convertToDTO(UserEntity entity) {;
+    private User convertToDTO(UserEntity entity) {
+        ;
         User user = mapper.map(entity, User.class);
 
         user.setIsVeteran(entity.getVeteran());

@@ -8,7 +8,6 @@ import com.ss.user.errors.EmailTakenException;
 import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.Driver;
 import com.ss.user.model.DriverRating;
-import com.ss.user.model.User;
 import com.ss.user.model.UserSettings;
 import com.ss.user.repo.DriverRepo;
 import com.ss.user.repo.UserRepo;
@@ -39,6 +38,17 @@ public class DriverService {
         this.passwordEncoder = passwordEncoder;
         this.mapper = mapper;
         this.driverRepo = driverRepo;
+    }
+
+    static void convertSettingsToEntity(UserEntity userEntity, UserSettings settings2, DateTimeFormatter formatter, String dob) {
+        SettingsEntity settings = new SettingsEntity();
+        settings.setNotifications(new NotificationsEntity()
+                .setEmail(settings2.getNotifications().getEmail())
+                .setPhoneOption(settings2.getNotifications().getText()));
+        settings.setThemes(new ThemesEntity().setDark(settings2.getTheme().equals(UserSettings.ThemeEnum.DARK)));
+
+        userEntity.setBirthDate(LocalDate.from(formatter.parse(dob)));
+        userEntity.setSettings(settings);
     }
 
     public Driver getDriver(String email) throws DriverNotFoundException {
@@ -79,10 +89,9 @@ public class DriverService {
         return convertToDTO(driverRepo.save(driverEntity));
     }
 
-    public void deleteDriver(Long id){
+    public void deleteDriver(Long id) {
         driverRepo.deleteById(id);
     }
-
 
     private UserRoleEntity getDriverRole() {
         Optional<UserRoleEntity> role = userRoleRepo.findByRole("driver");
@@ -100,7 +109,6 @@ public class DriverService {
         driverEntity.setCheckedIn(checkedIn);
         driverRepo.save(driverEntity);
     }
-
 
     public DriverEntity convertToEntity(Driver driver) {
         UserEntity userEntity = mapper.map(driver, UserEntity.class);
@@ -142,16 +150,5 @@ public class DriverService {
 
     private DriverRating convertRatingToDTO(DriverRatingEntity entity) {
         return mapper.map(entity, DriverRating.class);
-    }
-
-    static void convertSettingsToEntity(UserEntity userEntity, UserSettings settings2, DateTimeFormatter formatter, String dob) {
-        SettingsEntity settings = new SettingsEntity();
-        settings.setNotifications(new NotificationsEntity()
-                .setEmail(settings2.getNotifications().getEmail())
-                .setPhoneOption(settings2.getNotifications().getText()));
-        settings.setThemes(new ThemesEntity().setDark(settings2.getTheme().equals(UserSettings.ThemeEnum.DARK)));
-
-        userEntity.setBirthDate(LocalDate.from(formatter.parse(dob)));
-        userEntity.setSettings(settings);
     }
 }

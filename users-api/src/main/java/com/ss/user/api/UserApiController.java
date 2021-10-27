@@ -113,7 +113,7 @@ public class UserApiController {
     public ResponseEntity<User> patchUser(@ApiParam(value = "New user data, non null properties will be updated") @Valid @RequestBody(required = false) User user,
                                           Authentication authentication) throws UserNotFoundException, InvalidCredentialsException {
         AuthDetails authDetails = (AuthDetails) authentication.getPrincipal();
-        if (Objects.equals(authDetails.getId(), user.getId())){
+        if (Objects.equals(authDetails.getId(), user.getId())) {
             return ResponseEntity.ok(userService.updateProfile(user));
         }
         throw new InvalidCredentialsException("Cannot update other user information.");
