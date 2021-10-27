@@ -3,6 +3,7 @@ package com.ss.user.service;
 import com.database.ormlibrary.driver.DriverEntity;
 import com.database.ormlibrary.driver.DriverRatingEntity;
 import com.database.ormlibrary.user.*;
+import com.ss.user.errors.DriverNotFoundException;
 import com.ss.user.errors.EmailTakenException;
 import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.Driver;
@@ -50,6 +51,13 @@ public class DriverService {
         userEntity.setSettings(settings);
     }
 
+    public Driver getDriver(String email) throws DriverNotFoundException {
+        Optional<DriverEntity> entity = driverRepo.findByUserEmail(email);
+        if (entity.isPresent()) {
+            return convertToDTO(entity.get());
+        } else throw new DriverNotFoundException("Driver not found");
+    }
+
     public Driver getDriverById(Long id) throws UserNotFoundException {
         return convertToDTO(driverRepo.findById(id).orElseThrow(() -> new UserNotFoundException("driver not found")));
     }
@@ -93,6 +101,13 @@ public class DriverService {
             UserRoleEntity entity = new UserRoleEntity().setRole("driver");
             return userRoleRepo.save(entity);
         }
+    }
+
+    public void changeStatus(Long userId, boolean checkedIn) throws UserNotFoundException {
+        DriverEntity driverEntity = driverRepo.findById(userId).orElseThrow(
+                () -> new UserNotFoundException("invalid driver id"));
+        driverEntity.setCheckedIn(checkedIn);
+        driverRepo.save(driverEntity);
     }
 
     public DriverEntity convertToEntity(Driver driver) {

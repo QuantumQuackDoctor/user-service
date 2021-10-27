@@ -3,17 +3,23 @@ package com.ss.user.api;
 import com.database.ormlibrary.driver.DriverEntity;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
+import com.ss.user.config.UserDetailsConfig;
 import com.ss.user.model.Driver;
 import com.ss.user.model.UserSettings;
 import com.ss.user.model.UserSettingsNotifications;
 import com.ss.user.repo.DriverRepo;
+import com.ss.user.repo.UserRepo;
+import com.ss.user.repo.UserRoleRepo;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -26,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Import(UserDetailsConfig.class)
 class DriverApiControllerTest {
 
     @Autowired
@@ -34,6 +41,10 @@ class DriverApiControllerTest {
     MockMvc mockMvc;
     @Autowired
     PasswordEncoder passwordEncoder;
+    @Autowired
+    UserRepo userRepo;
+    @Autowired
+    UserRoleRepo userRoleRepo;
 
     ObjectMapper mapper = new ObjectMapper();
 
@@ -205,6 +216,33 @@ class DriverApiControllerTest {
         assertFalse(updatedDriverOptional.isPresent());
     }
 
+    @Test
+    @Sql({"classpath:driver-data.sql"})
+    @WithUserDetails(value = "driver", userDetailsServiceBeanName = "testUserDetailsService")
+    void checkIn_ShouldSetStatusToTrue() throws Exception {
+        mockMvc.perform(post("/accounts/driver/checkin")).andExpect(status().isOk());
+
+        assertTrue(driverRepo.findById(1L).get().isCheckedIn());
+    }
+
+
+    @Test
+    @Sql({"classpath:driver-data.sql"})
+    @WithUserDetails(value = "driver", userDetailsServiceBeanName = "testUserDetailsService")
+    void checkOut_ShouldSetStatusToFalse() throws Exception {
+        mockMvc.perform(post("/accounts/driver/checkout")).andExpect(status().isOk());
+
+        assertFalse(driverRepo.findById(1L).get().isCheckedIn());
+    }
+
+    @Test
+    @WithUserDetails(value = "driver", userDetailsServiceBeanName = "testUserDetailsService")
+    void checkOut_WithoutUserShouldThrow() throws Exception {
+        if (driverRepo.findById(1L).isPresent())
+            driverRepo.deleteById(1L);
+        mockMvc.perform(post("/accounts/driver/checkout")).andExpect(status().isNotFound());
+    }
+
     private Driver createSampleDriverDTO() {
         Driver driver = new Driver();
         driver.setId(null);
@@ -235,8 +273,6 @@ class DriverApiControllerTest {
 //        driver.setUser(createSampleUserEntity());
 //        driver.setCar("big car");
 //        driver.setRatings(Collections.singletonList(new DriverRatingEntity()));
-//
-//
 //        return driver;
 //    }
 //
@@ -252,6 +288,12 @@ class DriverApiControllerTest {
 //        user.setSettings(new SettingsEntity().setNotifications(
 //                new NotificationsEntity().setEmail(true).setPhoneOption(true)).setThemes(
 //                new ThemesEntity().setDark(true)));
+//        Optional<UserRoleEntity> role = userRoleRepo.findByRole("driver");
+//        if(role.isPresent())
+//            user.setUserRole(role.get());
+//        else
+//            user.setUserRole(userRoleRepo.save(new UserRoleEntity().setRole("driver")));
+//
 //        return user;
 //    }
 }
