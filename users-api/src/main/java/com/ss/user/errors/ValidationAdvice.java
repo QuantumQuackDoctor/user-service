@@ -31,4 +31,9 @@ public class ValidationAdvice {
     public ResponseEntity<String> handleEmailTaken(EmailTakenException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
     }
+
+    @ExceptionHandler(ResourceExpiredException.class)
+    public ResponseEntity<String> handleResourceExpired(ResourceExpiredException e){
+        return ResponseEntity.status(HttpStatus.GONE).body(e.getMessage());
+    }
 }

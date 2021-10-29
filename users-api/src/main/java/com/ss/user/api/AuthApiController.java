@@ -1,14 +1,8 @@
 package com.ss.user.api;
 
 import com.amazonaws.services.simpleemail.model.MessageRejectedException;
-import com.ss.user.errors.ConfirmationTokenExpiredException;
-import com.ss.user.errors.InvalidAdminEmailException;
-import com.ss.user.errors.InvalidCredentialsException;
-import com.ss.user.errors.UserNotFoundException;
-import com.ss.user.model.AuthRequest;
-import com.ss.user.model.AuthResponse;
-import com.ss.user.model.PasswordResetRequest;
-import com.ss.user.model.User;
+import com.ss.user.errors.*;
+import com.ss.user.model.*;
 import com.ss.user.service.AuthService;
 import com.ss.user.service.UserService;
 import io.swagger.annotations.ApiOperation;
@@ -49,7 +43,7 @@ public class AuthApiController {
      * or Missing field (status code 400)
      * or username or email invalid (status code 409)
      */
-    @PreAuthorize("permitAll")
+    @PreAuthorize("permitAll()")
     @PutMapping(value = "/register", produces = {"application/json"}, consumes = {"application/json", "application/xml"})
     @ApiResponses({
             @ApiResponse(code = 200, message = "Account Created"),
@@ -129,21 +123,20 @@ public class AuthApiController {
      * POST /register : Reset password
      * Sends email with password reset key, send patch request to same path to update password. Check users and drivers
      *
-     * @param body Email (optional)
      * @return Email sent (status code 200)
      * or Not Found (status code 404)
      */
-    @ApiOperation(value = "Reset password", nickname = "resetPassword", notes = "Sends email with password reset key, send patch request to same path to update password. Check users and drivers", tags = {"auth",})
+    @ApiOperation(value = "Reset password", nickname = "resetPassword", notes = "Sends email with password reset key", tags = {"auth",})
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Email sent"),
             @ApiResponse(code = 404, message = "Not Found")})
-    @PostMapping(
-            value = "/register",
-            consumes = {"application/json", "application/xml"}
+    @GetMapping(
+            value = "/reset-password/{portalType}/{email}"
     )
-    public ResponseEntity<Void> resetPassword(@ApiParam(value = "Email") @Valid @RequestBody(required = false) String body) {
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
-
+    public ResponseEntity<Void> resetPassword(@ApiParam("email") @PathVariable("email") String email,
+                                              @ApiParam("portalType") @PathVariable("portalType") PortalType type) throws UserNotFoundException {
+        authService.sendPasswordResetEmail(email, type);
+        return ResponseEntity.ok(null);
     }
 
     /**
@@ -156,12 +149,13 @@ public class AuthApiController {
     @ApiOperation(value = "Update Password", nickname = "updatePassword", notes = "Send new password, needs key from reset password", tags = {"auth",})
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Password Reset")})
-    @PatchMapping(
-            value = "/register",
+    @PostMapping(
+            value = "/reset-password",
             consumes = {"application/json"}
     )
-    public ResponseEntity<Void> updatePassword(@ApiParam(value = "") @Valid @RequestBody(required = false) PasswordResetRequest passwordResetRequest) {
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    public ResponseEntity<Void> updatePassword(@ApiParam(value = "") @Valid @RequestBody(required = false) PasswordResetRequest passwordResetRequest) throws UserNotFoundException, ResourceExpiredException {
+        authService.resetPassword(passwordResetRequest);
+        return ResponseEntity.ok(null);
     }
 
     /**
