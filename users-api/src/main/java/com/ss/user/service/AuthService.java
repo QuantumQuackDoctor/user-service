@@ -102,7 +102,7 @@ public class AuthService {
         SendTemplatedEmailRequest sendTemplatedEmailRequest = new SendTemplatedEmailRequest()
                 .withDestination(new Destination().withToAddresses(email))
                 .withTemplate(passwordResetTemplate)
-                .withTemplateData(String.format("{\"URL\": \"%s/reset/%s\", \"name\": \"%s\"}", url, resetRequest.getToken(), user.getFirstName()))
+                .withTemplateData(String.format("{\"URL\": \"%s/reset-password/%s\", \"name\": \"%s\"}", url, resetRequest.getToken(), user.getFirstName()))
                 .withSource(emailSender);
 
         ses.sendTemplatedEmail(sendTemplatedEmailRequest);
