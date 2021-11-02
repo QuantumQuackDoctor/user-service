@@ -133,6 +133,7 @@ public class AuthApiController {
     @GetMapping(
             value = "/reset-password/{portalType}/{email}"
     )
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Void> resetPassword(@ApiParam("email") @PathVariable("email") String email,
                                               @ApiParam("portalType") @PathVariable("portalType") PortalType type) throws UserNotFoundException {
         authService.sendPasswordResetEmail(email, type);
@@ -153,6 +154,7 @@ public class AuthApiController {
             value = "/reset-password",
             consumes = {"application/json"}
     )
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Void> updatePassword(@ApiParam(value = "") @Valid @RequestBody(required = false) PasswordResetRequest passwordResetRequest) throws UserNotFoundException, ResourceExpiredException {
         authService.resetPassword(passwordResetRequest);
         return ResponseEntity.ok(null);
