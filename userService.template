@@ -87,7 +87,8 @@ Resources:
                       "port":"8080"
                   },
                   "admin-portal-url":"https://admin.drscrumptious.com",
-                  "user-portal-url":"https://www.drscrumptious.com"
+                  "user-portal-url":"https://www.drscrumptious.com",
+                  "management":{"metrics":{"export":{"cloudwatch":{"enabled":true}}}}
                 }
           LogConfiguration:
             LogDriver: awslogs
