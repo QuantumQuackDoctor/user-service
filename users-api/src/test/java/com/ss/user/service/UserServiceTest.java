@@ -243,4 +243,49 @@ class UserServiceTest {
         } catch (UserNotFoundException ignored) {
         }
     }
+
+
+    @Test
+    void getUser_WithValidUserId() throws UserNotFoundException {
+        UserEntity entity = sampleUserEntity();
+        when(userRepo.findById(1L)).thenReturn(Optional.of(entity));
+
+        User user = userService.getUser(1L);
+        assertEquals(entity.getEmail(), user.getEmail());
+        assertEquals(entity.getId(), user.getId());
+        assertEquals(entity.getFirstName(), user.getFirstName());
+        assertEquals(entity.getLastName(), user.getLastName());
+        assertEquals(entity.getPhone(), user.getPhone());
+        assertNull(user.getPassword());
+    }
+
+    @Test
+    void getUser_WithInvalidUserId() {
+        when(userRepo.findById(1L)).thenReturn(Optional.empty());
+        assertThrows(UserNotFoundException.class, () -> {
+            userService.getUser(1L);
+        });
+    }
+    @Test
+
+    void getUser_WithValidUserEmail() throws UserNotFoundException {
+        UserEntity entity = sampleUserEntity();
+        when(userRepo.findByEmail("email")).thenReturn(Optional.of(entity));
+
+        User user = userService.getUser("email");
+        assertEquals(entity.getEmail(), user.getEmail());
+        assertEquals(entity.getId(), user.getId());
+        assertEquals(entity.getFirstName(), user.getFirstName());
+        assertEquals(entity.getLastName(), user.getLastName());
+        assertEquals(entity.getPhone(), user.getPhone());
+        assertNull(user.getPassword());
+    }
+
+    @Test
+    void getUser_WithInvalidUserEmail() {
+        when(userRepo.findByEmail("email")).thenReturn(Optional.empty());
+        assertThrows(UserNotFoundException.class, () -> {
+            userService.getUser("email");
+        });
+    }
 }
