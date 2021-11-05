@@ -1,20 +1,15 @@
 package com.ss.user.api;
 
 import com.amazonaws.services.simpleemail.model.MessageRejectedException;
-import com.ss.user.errors.ConfirmationTokenExpiredException;
-import com.ss.user.errors.InvalidAdminEmailException;
-import com.ss.user.errors.InvalidCredentialsException;
-import com.ss.user.errors.UserNotFoundException;
-import com.ss.user.model.AuthRequest;
-import com.ss.user.model.AuthResponse;
-import com.ss.user.model.PasswordResetRequest;
-import com.ss.user.model.User;
+import com.ss.user.errors.*;
+import com.ss.user.model.*;
 import com.ss.user.service.AuthService;
 import com.ss.user.service.UserService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,7 +20,9 @@ import javax.validation.Valid;
 import java.util.UUID;
 
 @Controller
+@Slf4j
 @RequestMapping(value = "/accounts")
+@CrossOrigin(origins = "https://api.drscrumptious.com")
 public class AuthApiController {
 
     private final UserService userService;
@@ -46,7 +43,7 @@ public class AuthApiController {
      * or Missing field (status code 400)
      * or username or email invalid (status code 409)
      */
-    @PreAuthorize("permitAll")
+    @PreAuthorize("permitAll()")
     @PutMapping(value = "/register", produces = {"application/json"}, consumes = {"application/json", "application/xml"})
     @ApiResponses({
             @ApiResponse(code = 200, message = "Account Created"),
@@ -71,6 +68,7 @@ public class AuthApiController {
 
     @ExceptionHandler(MessageRejectedException.class)
     public ResponseEntity<String> emailFailedToSend(MessageRejectedException e) {
+        log.warn("MessageRejectedException - " + e.getMessage());
         return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -83,7 +81,7 @@ public class AuthApiController {
      * or Invalid user (status code 400)
      * or Account not activated (status code 401)
      */
-    @PreAuthorize("permitAll")
+    @PreAuthorize("permitAll()")
     @PostMapping(value = "/login", produces = {"application/json", "application/xml"}, consumes = {"application/json", "application/xml"})
     @ApiResponses({
             @ApiResponse(code = 200, message = "Authenticated", response = AuthResponse.class),
@@ -94,7 +92,7 @@ public class AuthApiController {
         return ResponseEntity.ok(authService.authenticate(authRequest));
     }
 
-    @PreAuthorize("permitAll")
+    @PreAuthorize("permitAll()")
     @PostMapping(value = "/activate/{token}")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Account activated"),
@@ -125,21 +123,21 @@ public class AuthApiController {
      * POST /register : Reset password
      * Sends email with password reset key, send patch request to same path to update password. Check users and drivers
      *
-     * @param body Email (optional)
      * @return Email sent (status code 200)
      * or Not Found (status code 404)
      */
-    @ApiOperation(value = "Reset password", nickname = "resetPassword", notes = "Sends email with password reset key, send patch request to same path to update password. Check users and drivers", tags = {"auth",})
+    @ApiOperation(value = "Reset password", nickname = "resetPassword", notes = "Sends email with password reset key", tags = {"auth",})
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Email sent"),
             @ApiResponse(code = 404, message = "Not Found")})
-    @PostMapping(
-            value = "/register",
-            consumes = {"application/json", "application/xml"}
+    @GetMapping(
+            value = "/reset-password/{portalType}/{email}"
     )
-    public ResponseEntity<Void> resetPassword(@ApiParam(value = "Email") @Valid @RequestBody(required = false) String body) {
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
-
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<Void> resetPassword(@ApiParam("email") @PathVariable("email") String email,
+                                              @ApiParam("portalType") @PathVariable("portalType") PortalType type) throws UserNotFoundException {
+        authService.sendPasswordResetEmail(email, type);
+        return ResponseEntity.ok(null);
     }
 
     /**
@@ -152,12 +150,14 @@ public class AuthApiController {
     @ApiOperation(value = "Update Password", nickname = "updatePassword", notes = "Send new password, needs key from reset password", tags = {"auth",})
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Password Reset")})
-    @PatchMapping(
-            value = "/register",
+    @PostMapping(
+            value = "/reset-password",
             consumes = {"application/json"}
     )
-    public ResponseEntity<Void> updatePassword(@Valid @RequestBody(required = false) PasswordResetRequest passwordResetRequest) {
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<Void> updatePassword(@ApiParam(value = "") @Valid @RequestBody(required = false) PasswordResetRequest passwordResetRequest) throws UserNotFoundException, ResourceExpiredException {
+        authService.resetPassword(passwordResetRequest);
+        return ResponseEntity.ok(null);
     }
 
     /**
@@ -176,7 +176,4 @@ public class AuthApiController {
     public ResponseEntity<Void> testAuth() {
         return ResponseEntity.ok(null);
     }
-
-
-
 }

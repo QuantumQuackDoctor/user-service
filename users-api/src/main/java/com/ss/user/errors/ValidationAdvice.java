@@ -7,7 +7,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,12 +23,22 @@ public class ValidationAdvice {
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<Object> handleInvalidCredentialsException (InvalidCredentialsException e) {
+    public ResponseEntity<Object> handleInvalidCredentialsException(InvalidCredentialsException e) {
         return ResponseEntity.badRequest().body(e);
     }
 
     @ExceptionHandler(EmailTakenException.class)
-    public ResponseEntity<String> handleEmailTaken(EmailTakenException e){
+    public ResponseEntity<String> handleEmailTaken(EmailTakenException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+    }
+
+    @ExceptionHandler(ResourceExpiredException.class)
+    public ResponseEntity<String> handleResourceExpired(ResourceExpiredException e) {
+        return ResponseEntity.status(HttpStatus.GONE).body(e.getMessage());
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<String> badUser(UserNotFoundException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
 }

@@ -1,2 +1,5 @@
 /users-api/target/
 .idea
+*.iws
+*.ipr
+.iml

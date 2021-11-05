@@ -2,3 +2,6 @@
 	path = ORM-Library
 	url = https://github.com/QuantumQuackDoctor/ORM-Library.git
 	update = merge
+[submodule "cloud-repository"]
+	path = cloud-repository
+	url = https://github.com/QuantumQuackDoctor/cloud-repository

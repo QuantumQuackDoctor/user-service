@@ -2,6 +2,8 @@ package com.ss.user.service;
 
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.model.*;
+import com.database.ormlibrary.user.UserEntity;
+import com.database.ormlibrary.user.UserRoleEntity;
 import com.database.ormlibrary.user.SettingsEntity;
 import com.database.ormlibrary.user.ThemesEntity;
 import com.database.ormlibrary.user.UserEntity;
@@ -23,11 +25,16 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Slf4j (topic = "UserServiceLogs")
 public class UserService {
 
+    private static final String admin = "admin";
     private final UserRepo userRepo;
     private final UserRoleRepo userRoleRepo;
     private final OrderRepo orderRepo;
@@ -55,8 +62,6 @@ public class UserService {
         return !userRepo.existsByEmail(email);
     }
 
-    private static final String admin = "admin";
-
     public void insertUser(User user, boolean isAdmin) throws InvalidAdminEmailException {
         if (!emailAvailable(user.getEmail())) return;
         UserEntity toInsert = convertToEntity(user);
@@ -80,6 +85,7 @@ public class UserService {
                 }
                 toInsert.setUserRole(role.get());
             } else {
+                log.info("Invalid Admin Account creation attempted with - " + user.getEmail());
                 throw new InvalidAdminEmailException("invalid email for admin account");
             }
         }
@@ -96,10 +102,6 @@ public class UserService {
     private void sendActivationEmail(String recipient, UUID uuid, String portalUrl) {
 
         String activationLink = portalUrl + "/activate/" + uuid.toString();
-
-//        request.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
-//        request.setFrom("ezra.john.mitchell@gmail.com");
-//        request.setSubject("Scrumptious account activation");
 
         String htmlBody = String.format(
                 "<a href=\"%s\"><h1 style=\"background-color: #2aa4d2; color: #f79e0; padding: 1em; text-decoration: none;\">Activate your account</h1></a>", activationLink) +
@@ -181,12 +183,21 @@ public class UserService {
                 userRepo.save(userToActivate);
                 throw new ConfirmationTokenExpiredException("Confirmation token expired");
             }
-        } else
+        } else {
+            log.info("Invalid activation token - " + uuid);
             throw new UserNotFoundException("Token invalid");
+        }
     }
 
     public User getUser(String email) throws UserNotFoundException {
         Optional<UserEntity> entity = userRepo.findByEmail(email);
+        if (entity.isPresent()) {
+            return convertToDTO(entity.get());
+        } else throw new UserNotFoundException("User not found");
+    }
+
+    public User getUser(Long id) throws UserNotFoundException {
+        Optional<UserEntity> entity = userRepo.findById(id);
         if (entity.isPresent()) {
             return convertToDTO(entity.get());
         } else throw new UserNotFoundException("User not found");
@@ -238,6 +249,8 @@ public class UserService {
         user.getSettings().getNotifications().setEmailOrder(entity.getSettings().getNotifications().getEmailOrder());
         user.getSettings().getNotifications().setText(entity.getSettings().getNotifications().getPhoneOption());
         user.getSettings().setTheme(entity.getSettings().getThemes().getDark() ? UserSettings.ThemeEnum.DARK : UserSettings.ThemeEnum.LIGHT);
+
+        List<Long> orderIDs = new ArrayList<>();
 
         //delete password
         user.setPassword(null);
