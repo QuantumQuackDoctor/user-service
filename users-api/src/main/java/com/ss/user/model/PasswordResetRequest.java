@@ -1,64 +1,35 @@
 package com.ss.user.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * InlineObject
  */
+@ApiModel
 @Getter
 @Setter
-@AllArgsConstructor
+@NoArgsConstructor
 public class PasswordResetRequest {
-    @JsonProperty("password")
+    @JsonProperty("newPassword")
     @NotBlank
-    private String password;
+    @Size(min = 8, max = 32, message = "password needs to be 8-32 characters")
+    private String newPassword;
 
-    @NotBlank
-    @JsonProperty("key")
-    private String key;
+    @NotNull
+    @JsonProperty("token")
+    private UUID token;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        PasswordResetRequest passwordResetRequest = (PasswordResetRequest) o;
-        return Objects.equals(this.password, passwordResetRequest.password) &&
-                Objects.equals(this.key, passwordResetRequest.key);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(password, key);
-    }
-
-    @Override
-    public String toString() {
-
-        return "class InlineObject {\n" +
-                "    password: " + toIndentedString(password) + "\n" +
-                "    key: " + toIndentedString(key) + "\n" +
-                "}";
-    }
-
-    /**
-     * Convert the given object to string with each line indented by 4 spaces
-     * (except the first line).
-     */
-    private String toIndentedString(Object o) {
-        if (o == null) {
-            return "null";
-        }
-        return o.toString().replace("\n", "\n    ");
-    }
 }
 

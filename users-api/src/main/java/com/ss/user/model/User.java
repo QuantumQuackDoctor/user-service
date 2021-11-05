@@ -46,7 +46,7 @@ public class User {
     @JsonProperty("password")
     @ApiModelProperty(value = "To be used in account creation only, DELETE THIS WHEN SENDING!!!")
     @NotBlank(message = "password required")
-    @Size(min = 5, max = 32, message = "password needs to be 5-32 characters")
+    @Size(min = 8, max = 32, message = "password needs to be 8-32 characters")
 
     private String password;
 
