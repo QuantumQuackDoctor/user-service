@@ -109,7 +109,7 @@ public class UserApiController {
                                           Authentication authentication) throws UserNotFoundException, InvalidCredentialsException {
         AuthDetails authDetails = (AuthDetails) authentication.getPrincipal();
         if (Objects.equals(authDetails.getId(), user.getId())) {
-            return ResponseEntity.ok(userService.updateProfile(user));
+            return ResponseEntity.ok(userService.updateProfile(user, false));
         }
         throw new InvalidCredentialsException("Cannot update other user information.");
     }

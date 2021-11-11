@@ -4,6 +4,7 @@ import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.model.SendEmailRequest;
 import com.database.ormlibrary.user.*;
 import com.ss.user.errors.ConfirmationTokenExpiredException;
+import com.ss.user.errors.EmailTakenException;
 import com.ss.user.errors.InvalidAdminEmailException;
 import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.User;
@@ -98,7 +99,7 @@ class UserServiceTest {
     }
 
     @Test
-    void insertUser() throws InvalidAdminEmailException {
+    void insertUser() throws InvalidAdminEmailException, EmailTakenException {
         when(userRepo.save(userCaptor.capture())).thenReturn(null);
         //create sample user to insert
         User testInsert = sampleUser();
@@ -133,7 +134,7 @@ class UserServiceTest {
         when(userRepo.findById(anyLong())).thenReturn(Optional.of(sampleUserEntity()));
 
         User updateSample = sampleUser();
-        User updateProfile = userService.updateProfile(updateSample);
+        User updateProfile = userService.updateProfile(updateSample, false);
 
         assertEquals(233434, updateProfile.getPoints());
         assertEquals("4443324@invalid.com", updateProfile.getEmail());
@@ -147,11 +148,11 @@ class UserServiceTest {
 
     @Test
     void updateUserNotFound() {
-        assertThrows(UserNotFoundException.class, () -> userService.updateProfile(new User()));
+        assertThrows(UserNotFoundException.class, () -> userService.updateProfile(new User(), false));
     }
 
     @Test
-    void insertAdmin() throws InvalidAdminEmailException {
+    void insertAdmin() throws InvalidAdminEmailException, EmailTakenException {
         when(userRepo.save(userCaptor.capture())).thenReturn(null);
 
         //create sample user to insert
@@ -196,7 +197,7 @@ class UserServiceTest {
             //insert sample
             userService.insertUser(testInsert, true);
             fail();
-        } catch (InvalidAdminEmailException ignored) {
+        } catch (InvalidAdminEmailException | EmailTakenException ignored) {
         }
     }
 
