@@ -149,14 +149,17 @@ public class UserService {
 
     public User getUser(Long id) throws UserNotFoundException {
         Optional<UserEntity> entity = userRepo.findById(id);
-        if (entity.isPresent()) {
+        if (entity.isPresent() && entity.get().getUserRole().getRole().equals("user")) {
             return convertToDTO(entity.get());
         } else throw new UserNotFoundException("User not found");
     }
 
-    public void deleteUser(Long id) {
-        //TODO delete orders
-        userRepo.deleteById(id);
+    public void deleteUser(Long id) throws UserNotFoundException {
+        UserEntity user = userRepo.findById(id).orElseThrow(() -> new UserNotFoundException("User does not exist"));
+        user.setActivated(false);
+        user.setDeactivatedEmail(user.getEmail());
+        user.setEmail(null);
+        userRepo.save(user);
     }
 
     public User updateProfile(User user, boolean updatePassword) throws UserNotFoundException {

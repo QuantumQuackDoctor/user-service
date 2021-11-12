@@ -30,8 +30,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 class UserServiceTest {
@@ -100,7 +99,7 @@ class UserServiceTest {
 
     @Test
     void insertUser() throws InvalidAdminEmailException, EmailTakenException {
-        when(userRepo.save(userCaptor.capture())).thenReturn(null);
+        when(userRepo.save(userCaptor.capture())).thenAnswer(invocation -> invocation.getArguments()[0]);
         //create sample user to insert
         User testInsert = sampleUser();
         //insert sample
@@ -153,7 +152,7 @@ class UserServiceTest {
 
     @Test
     void insertAdmin() throws InvalidAdminEmailException, EmailTakenException {
-        when(userRepo.save(userCaptor.capture())).thenReturn(null);
+        when(userRepo.save(userCaptor.capture())).thenAnswer(invocation -> invocation.getArguments()[0]);
 
         //create sample user to insert
         User testInsert = sampleUser();
@@ -267,8 +266,8 @@ class UserServiceTest {
             userService.getUser(1L);
         });
     }
-    @Test
 
+    @Test
     void getUser_WithValidUserEmail() throws UserNotFoundException {
         UserEntity entity = sampleUserEntity();
         when(userRepo.findByEmail("email")).thenReturn(Optional.of(entity));
@@ -289,4 +288,26 @@ class UserServiceTest {
             userService.getUser("email");
         });
     }
+
+    @Test
+    void deleteUser_WithUser_DeactivatesAccount() throws UserNotFoundException {
+        ArgumentCaptor<UserEntity> captor = ArgumentCaptor.forClass(UserEntity.class);
+        UserEntity originalEntity = sampleUserEntity();
+        when(userRepo.findById(1L)).thenReturn(Optional.of(sampleUserEntity()));
+        userService.deleteUser(1L);
+        verify(userRepo, times(1)).save(captor.capture());
+
+        UserEntity mutatedEntity = captor.getValue();
+
+        assertFalse(mutatedEntity.getActivated());
+
+        assertEquals(originalEntity.getEmail(), mutatedEntity.getDeactivatedEmail());
+    }
+
+    @Test
+    void deleteUser_WithoutUser_ThrowsNotFound(){
+        when(userRepo.findById(1L)).thenReturn(Optional.empty());
+        assertThrows(UserNotFoundException.class, () -> userService.deleteUser(1L));
+    }
+
 }

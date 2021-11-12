@@ -64,12 +64,13 @@ class AuthApiIntegrationTest {
         //create sample user to insert
         User testInsert = createSample();
 
+        when(userRepo.save(userCaptor.capture())).thenAnswer(invocation -> invocation.getArguments()[0]);
+
         mockMvc.perform(put("/accounts/register")
                         .content(mapper.writeValueAsString(testInsert))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        verify(userRepo, times(1)).save(userCaptor.capture());
 
         UserEntity inserted = userCaptor.getValue();
 
