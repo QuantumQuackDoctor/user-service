@@ -101,7 +101,7 @@ Resources:
                     }
                   },
                   "admin-portal-url":"https://admin.drscrumptious.com",
-                  "user-portal-url":"https://www.drscrumptious.com",
+                  "user-portal-url":"https://www.drscrumptious.com"
                 }
           LogConfiguration:
             LogDriver: awslogs
