@@ -104,6 +104,15 @@ Resources:
                       }
                     }
                   },
+                  "management": {
+                    "metrics": {
+                      "export": {
+                        "cloudwatch": {
+                          "enabled": true
+                        }
+                      }
+                    }
+                  },
                   "admin-portal-url":"https://admin.drscrumptious.com",
                   "user-portal-url":"https://www.drscrumptious.com",
                   "management":{"metrics":{"export":{"cloudwatch":{"enabled":true}}}}
