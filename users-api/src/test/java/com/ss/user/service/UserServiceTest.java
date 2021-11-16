@@ -93,7 +93,7 @@ class UserServiceTest {
         notifications.setPhoneOption(true);
         settings.setNotifications(notifications);
         testInsert.setSettings(settings);
-        testInsert.setUserRole(new UserRoleEntity().setRole("admin"));
+        testInsert.setUserRole(new UserRoleEntity().setRole("user"));
         return testInsert;
     }
 
