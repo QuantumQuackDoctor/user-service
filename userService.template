@@ -96,7 +96,7 @@ Resources:
                   },
                   "metrics": {
                     "cloudwatch": {
-                      "namespace": "US-${environment},
+                      "namespace": "US-${Environment},
                       "enabled": true
                     }
                   }
