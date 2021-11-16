@@ -94,25 +94,12 @@ Resources:
                   "server":{
                       "port":"8080"
                   },
-                  "cloud": {
-                    "aws": {
-                      "region": {
-                        "auto": true
-                      },
-                      "stack": {
-                        "auto": true
-                      }
+                  "metrics": {
+                    "cloudwatch": {
+                      "namespace": "US-${environment},
+                      "enabled": true
                     }
-                  },
-                  "management": {
-                    "metrics": {
-                      "export": {
-                        "cloudwatch": {
-                          "enabled": true
-                        }
-                      }
-                    }
-                  },
+                  }
                   "admin-portal-url":"https://admin.drscrumptious.com",
                   "user-portal-url":"https://www.drscrumptious.com",
                   "management":{"metrics":{"export":{"cloudwatch":{"enabled":true}}}}
