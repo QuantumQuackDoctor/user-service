@@ -73,7 +73,7 @@ public class UserApiController {
     }, tags = {"user",})
 
     @PreAuthorize("hasAuthority('user')")
-    public ResponseEntity<Void> deleteUser(Authentication authentication) {
+    public ResponseEntity<Void> deleteUser(Authentication authentication) throws UserNotFoundException {
         AuthDetails authDetails = (AuthDetails) authentication.getPrincipal();
         userService.deleteUser(authDetails.getId());
         return ResponseEntity.ok(null);

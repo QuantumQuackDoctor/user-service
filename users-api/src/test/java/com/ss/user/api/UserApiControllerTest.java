@@ -14,6 +14,7 @@ import com.ss.user.model.UserSettingsNotifications;
 import com.ss.user.repo.UserRepo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,6 +29,8 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -72,8 +75,12 @@ class UserApiControllerTest {
     @Test
     @WithUserDetails(value = "email", userDetailsServiceBeanName = "testUserDetailsService")
     void deleteUser_ShouldReturnOK() throws Exception {
+        when(userRepo.findById(1L)).thenReturn(Optional.of(createSample()));
         mockMvc.perform(delete("/accounts/user")).andExpect(status().isOk());
-        verify(userRepo).deleteById(1L);
+        ArgumentCaptor<UserEntity> userEntityArgumentCaptor = ArgumentCaptor.forClass(UserEntity.class);
+        verify(userRepo).save(userEntityArgumentCaptor.capture());
+        assertFalse(userEntityArgumentCaptor.getValue().getActivated());
+        assertNotNull(userEntityArgumentCaptor.getValue().getDeactivatedEmail());
     }
 
     @Test

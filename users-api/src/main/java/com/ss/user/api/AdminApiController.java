@@ -26,7 +26,7 @@ public class AdminApiController {
      * DELETE /users : Admin Delete User
      * Delete user with id
      *
-     * @param body userId (optional)
+     * @param id userId (optional)
      * @return Deleted (status code 200)
      * or Access token is missing or invalid (status code 401)
      * or Forbidden (status code 403)
@@ -42,14 +42,13 @@ public class AdminApiController {
             @ApiResponse(code = 403, message = "Forbidden"),
             @ApiResponse(code = 404, message = "Not Found")})
     @DeleteMapping(
-            value = "/users",
-            produces = {"application/json"},
-            consumes = {"application/json", "application/xml"}
+            value = "/user/{id}"
     )
 
-    @PreAuthorize("hasRole('admin')")
-    public ResponseEntity<Void> deleteUsers(@ApiParam(value = "userId") @Valid @RequestBody(required = false) String body) {
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    @PreAuthorize("hasAuthority('admin')")
+    public ResponseEntity<Void> deleteUsers(@PathVariable Long id) throws UserNotFoundException {
+        userService.deleteUser(id);
+        return ResponseEntity.ok(null);
     }
 
     /**
@@ -123,4 +122,6 @@ public class AdminApiController {
         userService.updateProfile(user, updatePassword);
         return ResponseEntity.ok(null);
     }
+
+
 }
