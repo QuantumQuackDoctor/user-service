@@ -57,6 +57,14 @@ Resources:
                   - "ses:SendRawEmail"
                   - "ses:SendBulkTemplatedEmail"
                 Resource: "*"
+        - PolicyName: Cloudwatch
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "cloudwatch:*"
+                Resource: "*"
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
@@ -85,6 +93,16 @@ Resources:
                   },
                   "server":{
                       "port":"8080"
+                  },
+                  "cloud": {
+                    "aws": {
+                      "region": {
+                        "auto": true
+                      },
+                      "stack": {
+                        "auto": true
+                      }
+                    }
                   },
                   "admin-portal-url":"https://admin.drscrumptious.com",
                   "user-portal-url":"https://www.drscrumptious.com",
