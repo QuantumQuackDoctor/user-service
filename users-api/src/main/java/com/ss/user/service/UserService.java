@@ -5,6 +5,7 @@ import com.amazonaws.services.simpleemail.model.*;
 import com.database.ormlibrary.user.UserEntity;
 import com.database.ormlibrary.user.UserRoleEntity;
 import com.ss.user.errors.ConfirmationTokenExpiredException;
+import com.ss.user.errors.EmailTakenException;
 import com.ss.user.errors.InvalidAdminEmailException;
 import com.ss.user.errors.UserNotFoundException;
 import com.ss.user.model.User;
@@ -57,8 +58,8 @@ public class UserService {
         return !userRepo.existsByEmail(email);
     }
 
-    public void insertUser(User user, boolean isAdmin) throws InvalidAdminEmailException {
-        if (!emailAvailable(user.getEmail())) return;
+    public User insertUser(User user, boolean isAdmin) throws InvalidAdminEmailException, EmailTakenException {
+        if (!emailAvailable(user.getEmail())) throw new EmailTakenException("email not available");
         UserEntity toInsert = convertToEntity(user);
         //set defaults
         toInsert.setId(null);
@@ -91,7 +92,8 @@ public class UserService {
 
         sendActivationEmail(toInsert.getEmail(), toInsert.getActivationToken(), isAdmin ? adminPortalURL : userPortalURL);
 
-        userRepo.save(toInsert);
+        UserEntity insertedUser = userRepo.save(toInsert);
+        return convertToDTO(insertedUser);
     }
 
     private void sendActivationEmail(String recipient, UUID uuid, String portalUrl) {
@@ -157,7 +159,7 @@ public class UserService {
         userRepo.deleteById(id);
     }
 
-    public User updateProfile(User user) throws UserNotFoundException {
+    public User updateProfile(User user, boolean updatePassword) throws UserNotFoundException {
         Optional<UserEntity> entityOptional = userRepo.findById(user.getId());
         if (entityOptional.isPresent()) {
             UserEntity entity = entityOptional.get();
@@ -169,11 +171,17 @@ public class UserService {
                         entity.getUserRole().getRole().equals("admin") ? adminPortalURL : userPortalURL);
                 entity.setEmail(user.getEmail());
             }
+
             UserEntity updateEntity = convertToEntity(user);
             entity.setBirthDate(updateEntity.getBirthDate());
             entity.setPhone(updateEntity.getPhone());
             entity.setFirstName(updateEntity.getFirstName());
             entity.setLastName(updateEntity.getLastName());
+            entity.setVeteran(updateEntity.getVeteran());
+            entity.setPoints(updateEntity.getPoints());
+            if(updatePassword) {
+                entity.setPassword(passwordEncoder.encode(user.getPassword()));
+            }
             userRepo.save(entity);
             return convertToDTO(entity);
         } else {
@@ -189,7 +197,6 @@ public class UserService {
     }
 
     private User convertToDTO(UserEntity entity) {
-        ;
         User user = mapper.map(entity, User.class);
 
         user.setIsVeteran(entity.getVeteran());

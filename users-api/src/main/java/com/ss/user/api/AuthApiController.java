@@ -50,7 +50,7 @@ public class AuthApiController {
             @ApiResponse(code = 400, message = "Missing field"),
             @ApiResponse(code = 409, message = "username or email invalid")})
     @ApiOperation(value = "Register", nickname = "putRegister", notes = "TODO Register new user, email validation will be sent", tags = {"auth",})
-    public ResponseEntity<String> putRegister(@RequestParam(defaultValue = "false") boolean admin, @RequestBody(required = true) @Valid @ApiParam("User to register") User user) throws InvalidAdminEmailException {
+    public ResponseEntity<String> putRegister(@RequestParam(defaultValue = "false") boolean admin, @RequestBody(required = true) @Valid @ApiParam("User to register") User user) throws InvalidAdminEmailException, EmailTakenException {
         //check if phone or email exist
         if (userService.emailAvailable(user.getEmail())) {
             //insert user
