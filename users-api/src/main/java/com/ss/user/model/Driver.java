@@ -1,6 +1,7 @@
 package com.ss.user.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.ss.user.validators.ValidPassword;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
@@ -52,7 +53,7 @@ public class Driver {
     @JsonProperty("password")
     @ApiModelProperty(value = "To be used in account creation only, DELETE THIS WHEN SENDING!!!")
     @NotBlank(message = "password required")
-    @Size(min = 5, max = 32, message = "password needs to be 5-32 characters")
+    @ValidPassword
     private String password;
 
     @JsonProperty("phone")

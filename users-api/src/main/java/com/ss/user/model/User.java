@@ -1,6 +1,7 @@
 package com.ss.user.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.ss.user.validators.ValidPassword;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -46,8 +47,7 @@ public class User {
     @JsonProperty("password")
     @ApiModelProperty(value = "To be used in account creation only, DELETE THIS WHEN SENDING!!!")
     @NotBlank()
-    @Size(min = 8, max = 32, message = "password needs to be 8-32 characters")
-
+    @ValidPassword
     private String password;
 
     @JsonProperty("phone")
