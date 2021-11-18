@@ -118,7 +118,7 @@ class UserApiControllerTest {
         userDTO.setFirstName("firstName");
         userDTO.setLastName("lastName");
         userDTO.setPhone("phone");
-        userDTO.setPassword("password");
+        userDTO.setPassword("StrongPassword1#");
         userDTO.setDOB(LocalDate.parse("2002-07-20").toString());
         userDTO.setPoints(233434);
         userDTO.setIsVeteran(false);

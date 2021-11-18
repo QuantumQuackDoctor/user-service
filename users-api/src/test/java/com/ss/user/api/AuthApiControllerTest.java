@@ -142,7 +142,7 @@ class AuthApiControllerTest {
         user.setFirstName("firstName");
         user.setLastName("lastName");
         user.setPhone("phone");
-        user.setPassword("password");
+        user.setPassword("StrongPassword1#");
         user.setDOB("2002-07-20");
         user.setPoints(233434);
         user.setIsVeteran(false);
