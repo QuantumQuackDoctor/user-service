@@ -1,6 +1,7 @@
 package com.ss.user.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.ss.user.validators.ValidPassword;
 import io.swagger.annotations.ApiModel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,7 +25,7 @@ import java.util.UUID;
 public class PasswordResetRequest {
     @JsonProperty("newPassword")
     @NotBlank
-    @Size(min = 8, max = 32, message = "password needs to be 8-32 characters")
+    @ValidPassword
     private String newPassword;
 
     @NotNull

@@ -148,7 +148,7 @@ class AuthApiIntegrationTest {
         user.setEmail("4443324@invalid.com");
         user.setFirstName("firstName");
         user.setLastName("lastName");
-        user.setPassword("password"); //should be hashed
+        user.setPassword("StrongPassword1#"); //should be hashed
         user.setBirthDate(LocalDate.now()); //test local date parsing
         user.setPoints(233434); //should be overwritten
         user.setVeteran(false);
@@ -170,7 +170,7 @@ class AuthApiIntegrationTest {
         user.setFirstName("firstName");
         user.setLastName("lastName");
         user.setPhone("phone");
-        user.setPassword("password");
+        user.setPassword("StrongPassword1#");
         user.setDOB("2002-07-20");
         user.setPoints(233434);
         user.setIsVeteran(false);

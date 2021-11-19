@@ -122,7 +122,7 @@ class DriverApiControllerTest {
         driverDTO.setCar("new Car");
         driverDTO.setFirstName("newFirstName");
         driverDTO.setLastName("newLastName");
-        driverDTO.setPassword("newPassword");
+        driverDTO.setPassword("newPassword1#");
 
         mockMvc.perform(post("/accounts/driver?update-password=false").content(mapper.writeValueAsString(driverDTO)).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -157,7 +157,7 @@ class DriverApiControllerTest {
         driverDTO.setCar("new Car");
         driverDTO.setFirstName("newFirstName");
         driverDTO.setLastName("newLastName");
-        driverDTO.setPassword("newPassword");
+        driverDTO.setPassword("newPassword1#");
 
         mockMvc.perform(post("/accounts/driver?update-password=true").content(mapper.writeValueAsString(driverDTO)).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -170,7 +170,7 @@ class DriverApiControllerTest {
         assertEquals(driverDTO.getCar(), updatedDriver.getCar());
         assertEquals(driverDTO.getFirstName(), updatedDriver.getUser().getFirstName());
         assertEquals(driverDTO.getLastName(), updatedDriver.getUser().getLastName());
-        assertTrue(passwordEncoder.matches("newPassword", updatedDriver.getUser().getPassword()));
+        assertTrue(passwordEncoder.matches("newPassword1#", updatedDriver.getUser().getPassword()));
 
         driverRepo.deleteById(id);
     }
@@ -249,7 +249,7 @@ class DriverApiControllerTest {
         driver.setFirstName("first");
         driver.setLastName("last");
         driver.setDOB("2002-07-20");
-        driver.setPassword("password");
+        driver.setPassword("StrongPassword1#");
         driver.setPhone("5555555555");
         driver.setCar("big car");
         driver.setSettings(createUserSettings());
