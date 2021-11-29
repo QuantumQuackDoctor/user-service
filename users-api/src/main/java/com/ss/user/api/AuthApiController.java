@@ -5,6 +5,9 @@ import com.ss.user.errors.*;
 import com.ss.user.model.*;
 import com.ss.user.service.AuthService;
 import com.ss.user.service.UserService;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -27,11 +30,19 @@ public class AuthApiController {
 
     private final UserService userService;
     private final AuthService authService;
+    private final MeterRegistry meterRegistry;
+
+    private Counter registerCounter;
+    private Timer loginTimer;
 
     @org.springframework.beans.factory.annotation.Autowired
-    public AuthApiController(UserService userService, AuthService authService) {
+    public AuthApiController(UserService userService, AuthService authService, MeterRegistry meterRegistry) {
         this.userService = userService;
         this.authService = authService;
+        this.meterRegistry = meterRegistry;
+
+        registerCounter = meterRegistry.counter("USER.REGISTER");
+        loginTimer = meterRegistry.timer("USER.LOGIN");
     }
 
     /**
@@ -55,6 +66,7 @@ public class AuthApiController {
         if (userService.emailAvailable(user.getEmail())) {
             //insert user
             userService.insertUser(user, admin);
+            registerCounter.increment();
             return ResponseEntity.ok("Account created");
         } else {
             return new ResponseEntity<>("Email taken", HttpStatus.CONFLICT);
