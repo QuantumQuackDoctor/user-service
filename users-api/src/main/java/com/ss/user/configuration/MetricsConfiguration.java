@@ -1,4 +1,4 @@
-package com.ss.user.metrics;
+package com.ss.user.configuration;
 
 import io.micrometer.cloudwatch2.CloudWatchConfig;
 import io.micrometer.cloudwatch2.CloudWatchMeterRegistry;
@@ -7,6 +7,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchAsyncClient;
 
 import java.time.Duration;
@@ -16,8 +17,8 @@ import java.util.Map;
 @Configuration
 public class MetricsConfiguration {
     @Bean
-    public CloudWatchAsyncClient cloudWatchAsyncClient() {
-        return CloudWatchAsyncClient.builder().build();
+    public CloudWatchAsyncClient cloudWatchAsyncClient(@Value("${metrics.cloudwatch.region}")String region) {
+        return CloudWatchAsyncClient.builder().region(Region.of(region)).build();
     }
 
     @Bean
